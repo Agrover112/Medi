@@ -21,27 +21,50 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert } from "@/components/ui/alert"; // Removed AlertDescription as it's not used
 
-// Static data for initial display
-const initialCustomerInfo = {
-  name: "Jane Doe",
-  profileType: "Customer Profile",
-  phoneNumber: "123-456-7890",
-  email: "jane.doe@example.com",
-  dob: "1990-05-15",
-  address: "123 Main St, Anytown, USA 12345",
-  // status field removed
+// Define the expected structure for a single customer's info from the API
+interface ApiCustomerInfo {
+  name: string;
+  address: string;
+  date_of_birth: string;
+  email: string;
+  phone: string;
+  previous_customer: boolean;
+  problem: string;
+}
+
+interface CustomerInformationFormProps {
+  initialData: ApiCustomerInfo | null;
+}
+
+// Structure for display state
+interface DisplayCustomerData {
+  name: string;
+  phoneNumber: string;
+  email: string;
+  dob: string;
+  address: string;
+  previous_customer: boolean;
+  problem: string;
+}
+
+const defaultDisplayData: DisplayCustomerData = {
+  name: "N/A",
+  phoneNumber: "",
+  email: "",
+  dob: "N/A",
+  address: "",
+  previous_customer: false,
+  problem: "",
 };
 
 const customerDetailsSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  profileType: z.string().min(2, { message: "Profile type must be at least 2 characters." }),
-  phoneNumber: z.string().min(10, { message: "Phone number must be at least 10 digits." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
+  name: z.string().min(1, { message: "Name must be at least 1 character." }),
+  phoneNumber: z.string().optional(),
+  email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal("")),
   dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date of birth must be in YYYY-MM-DD format." }),
-  address: z.string().min(5, { message: "Address must be at least 5 characters." }),
-  // status field removed from schema
+  address: z.string().optional(),
 });
 
 type CustomerDetailsFormData = z.infer<typeof customerDetailsSchema>;
@@ -66,31 +89,62 @@ const InfoLine: React.FC<InfoLineProps> = ({ icon: Icon, label, value, className
     <Icon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
     <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-2 w-full">
       <span className="text-sm font-medium text-muted-foreground min-w-[120px]">{label}:</span>
-      <span className="text-sm text-foreground break-words">{value}</span>
+      <span className="text-sm text-foreground break-words">{value || "N/A"}</span>
     </div>
   </div>
 );
 
-export default function CustomerInformationForm() {
+export default function CustomerInformationForm({ initialData }: CustomerInformationFormProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState(false);
-  const [customerData, setCustomerData] = React.useState(initialCustomerInfo);
+
+  const mapApiToDisplayData = React.useCallback((apiData: ApiCustomerInfo | null): DisplayCustomerData => {
+    if (!apiData) return defaultDisplayData;
+    return {
+      name: apiData.name || defaultDisplayData.name,
+      phoneNumber: apiData.phone || defaultDisplayData.phoneNumber,
+      email: apiData.email || defaultDisplayData.email,
+      dob: apiData.date_of_birth || defaultDisplayData.dob,
+      address: apiData.address || defaultDisplayData.address,
+      previous_customer: apiData.previous_customer,
+      problem: apiData.problem || defaultDisplayData.problem,
+    };
+  }, []);
+
+  const [customerData, setCustomerData] = React.useState<DisplayCustomerData>(() => mapApiToDisplayData(initialData));
 
   const customerDetailsForm = useForm<CustomerDetailsFormData>({
     resolver: zodResolver(customerDetailsSchema),
-    defaultValues: customerData,
+    defaultValues: {
+      name: customerData.name === "N/A" ? "" : customerData.name,
+      phoneNumber: customerData.phoneNumber,
+      email: customerData.email,
+      dob: customerData.dob === "N/A" ? "" : customerData.dob,
+      address: customerData.address,
+    },
   });
-
-  React.useEffect(() => {
-    customerDetailsForm.reset(customerData);
-  }, [customerData, isEditing, customerDetailsForm]);
 
   const problemForm = useForm<ProblemFormData>({
     resolver: zodResolver(problemFormSchema),
     defaultValues: {
-      currentProblem: "",
+      currentProblem: customerData.problem,
     },
   });
+
+  React.useEffect(() => {
+    const newDisplayData = mapApiToDisplayData(initialData);
+    setCustomerData(newDisplayData);
+    customerDetailsForm.reset({
+      name: newDisplayData.name === "N/A" ? "" : newDisplayData.name,
+      phoneNumber: newDisplayData.phoneNumber,
+      email: newDisplayData.email,
+      dob: newDisplayData.dob === "N/A" ? "" : newDisplayData.dob,
+      address: newDisplayData.address,
+    });
+    problemForm.reset({
+      currentProblem: newDisplayData.problem,
+    });
+  }, [initialData, customerDetailsForm, problemForm, mapApiToDisplayData]);
 
   function onSubmitProblem(values: ProblemFormData) {
     console.log("Problem submitted:", values);
@@ -98,20 +152,33 @@ export default function CustomerInformationForm() {
       title: "Ticket Created!",
       description: `Problem reported: ${values.currentProblem.substring(0,50)}...`,
     });
-    problemForm.reset();
+    // problemForm.reset(); // Resetting might clear user input if they want to edit it after submission, depends on UX
   }
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
-    setCustomerData(values);
+    setCustomerData(prev => ({
+        ...prev, // Keep previous_customer and problem from original data source
+        name: values.name,
+        phoneNumber: values.phoneNumber || "",
+        email: values.email || "",
+        dob: values.dob,
+        address: values.address || "",
+    }));
     setIsEditing(false);
     toast({
       title: "Customer Details Updated!",
-      description: "The customer information has been saved.",
+      description: "The customer information has been saved locally.",
     });
   }
 
   function handleCancelEdit() {
-    customerDetailsForm.reset(customerData);
+    customerDetailsForm.reset({
+        name: customerData.name === "N/A" ? "" : customerData.name,
+        phoneNumber: customerData.phoneNumber,
+        email: customerData.email,
+        dob: customerData.dob === "N/A" ? "" : customerData.dob,
+        address: customerData.address,
+    });
     setIsEditing(false);
   }
 
@@ -135,23 +202,14 @@ export default function CustomerInformationForm() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="profileType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Profile Type" {...field} className="text-sm p-1 h-auto" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                 {/* Previous customer status is not editable here, shown as description */}
               </div>
             ) : (
               <div>
                 <CardTitle className="text-2xl font-bold">{customerData.name}</CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">{customerData.profileType}</CardDescription>
+                <CardDescription className="text-sm text-muted-foreground">
+                  {customerData.previous_customer ? "Returning Customer" : "New Customer"}
+                </CardDescription>
               </div>
             )}
           </div>
@@ -167,7 +225,7 @@ export default function CustomerInformationForm() {
               </>
             ) : (
               <>
-                <Button variant="default" size="sm" onClick={() => setIsEditing(true)}>
+                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={customerData.name === "N/A"}>
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Button>
               </>
@@ -258,14 +316,15 @@ export default function CustomerInformationForm() {
                         <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
                         Current Problem
                       </FormLabel>
-                      <Alert variant="destructive" className="bg-red-50 border-red-200 p-0">
+                      <Alert variant="destructive" className="p-0">
                         <FormControl className="p-0 m-0">
                           <Textarea
                             data-ai-hint="device issue"
-                            placeholder="The device won't turn on after the latest update."
+                            placeholder="Describe the current problem..."
                             {...field}
                             rows={3}
                             className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none"
+                            disabled={customerData.name === "N/A"}
                           />
                         </FormControl>
                       </Alert>
@@ -278,7 +337,7 @@ export default function CustomerInformationForm() {
                   <Button 
                     type="submit" 
                     className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting}
+                    disabled={problemForm.formState.isSubmitting || customerData.name === "N/A"}
                   >
                     <Ticket className="mr-2 h-5 w-5" />
                     Create Ticket
@@ -292,4 +351,3 @@ export default function CustomerInformationForm() {
     </Form>
   );
 }
-
