@@ -4,8 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'MediForm Excel Generator',
-  description: 'Patient information form with Excel export.',
+  title: 'Customer Information - Receptionist Dashboard',
+  description: 'View and manage customer information and support tickets.',
 };
 
 export default function RootLayout({
