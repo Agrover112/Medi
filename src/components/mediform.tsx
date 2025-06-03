@@ -31,7 +31,7 @@ const initialCustomerInfo = {
   email: "jane.doe@example.com",
   dob: "1990-05-15",
   address: "123 Main St, Anytown, USA 12345",
-  status: "Returning", // Status remains in data, but badge in header is removed
+  // status field removed
 };
 
 const customerDetailsSchema = z.object({
@@ -41,7 +41,7 @@ const customerDetailsSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date of birth must be in YYYY-MM-DD format." }),
   address: z.string().min(5, { message: "Address must be at least 5 characters." }),
-  status: z.string().min(2, { message: "Status must be at least 2 characters." }),
+  // status field removed from schema
 });
 
 type CustomerDetailsFormData = z.infer<typeof customerDetailsSchema>;
@@ -158,7 +158,6 @@ export default function CustomerInformationForm() {
           <div className="flex items-center space-x-2">
             {isEditing ? (
               <>
-                {/* Status input field removed from here */}
                 <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)}>
                   <Save className="mr-2 h-4 w-4" /> Save
                 </Button>
@@ -168,7 +167,6 @@ export default function CustomerInformationForm() {
               </>
             ) : (
               <>
-                {/* Status Badge removed from here */}
                 <Button variant="default" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Button>
@@ -236,21 +234,6 @@ export default function CustomerInformationForm() {
                     </FormItem>
                   )}
                 />
-                 {/* Status input field for customer details when editing - removed from header, can be placed here if needed */}
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-3">
-                      {/* It might make more sense to have an icon for status if kept, or remove this field entirely */}
-                      <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Status:</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Returning, New, VIP" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
             </div>
           ) : (
             <div className="space-y-1">
@@ -303,15 +286,6 @@ export default function CustomerInformationForm() {
                 </div>
               </form>
             </Form>
-          </div>
-
-          <Separator />
-
-          <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-            <p className="text-sm text-muted-foreground">Customer Status: <span className="font-semibold text-foreground">{customerData.status}</span></p>
-            <div className="flex space-x-2">
-              {/* "View History" button removed */}
-            </div>
           </div>
         </CardContent>
       </Card>
