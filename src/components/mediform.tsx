@@ -70,8 +70,8 @@ const customerDetailsSchema = z.object({
 type CustomerDetailsFormData = z.infer<typeof customerDetailsSchema>;
 
 const problemFormSchema = z.object({
-  currentProblem: z.string().min(10, {
-    message: "Problem description must be at least 10 characters.",
+  currentProblem: z.string().min(1, { // Changed from 10 to 1
+    message: "Problem description cannot be empty.", // Updated message
   }),
 });
 
@@ -364,3 +364,5 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
     </Form>
   );
 }
+
+    
