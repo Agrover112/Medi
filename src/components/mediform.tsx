@@ -5,7 +5,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Edit, Ticket, Save, XCircle, Eye } from "lucide-react";
+import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Edit, Ticket, Save, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -308,9 +308,7 @@ export default function CustomerInformationForm() {
           <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
             <p className="text-sm text-muted-foreground">Customer Status: <span className="font-semibold text-foreground">{customerData.status}</span></p>
             <div className="flex space-x-2">
-              <Button variant="default" size="sm">
-                <Eye className="mr-2 h-4 w-4" /> View History
-              </Button>
+              {/* "View History" button removed */}
             </div>
           </div>
         </CardContent>
@@ -318,3 +316,4 @@ export default function CustomerInformationForm() {
     </Form>
   );
 }
+
