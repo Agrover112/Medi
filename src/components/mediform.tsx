@@ -5,7 +5,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Edit, Ticket, Save, XCircle } from "lucide-react";
+import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Edit, Ticket, Save, XCircle, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Alert } from "@/components/ui/alert"; // Removed AlertDescription as it's not used
+import { Alert } from "@/components/ui/alert";
 
 // Define the expected structure for a single customer's info from the API
 interface ApiCustomerInfo {
@@ -97,6 +97,7 @@ const InfoLine: React.FC<InfoLineProps> = ({ icon: Icon, label, value, className
 export default function CustomerInformationForm({ initialData }: CustomerInformationFormProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState(false);
+  const [isTicketSubmitted, setIsTicketSubmitted] = React.useState(false);
 
   const mapApiToDisplayData = React.useCallback((apiData: ApiCustomerInfo | null): DisplayCustomerData => {
     if (!apiData) return defaultDisplayData;
@@ -152,12 +153,16 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
       title: "Ticket Created!",
       description: `Problem reported: ${values.currentProblem.substring(0,50)}...`,
     });
-    // problemForm.reset(); // Resetting might clear user input if they want to edit it after submission, depends on UX
+    setIsTicketSubmitted(true);
+    setTimeout(() => {
+        setIsTicketSubmitted(false);
+        // problemForm.reset({ currentProblem: customerData.problem }); // Optionally reset to initial or clear
+    }, 3000); // Show success message for 3 seconds
   }
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
     setCustomerData(prev => ({
-        ...prev, // Keep previous_customer and problem from original data source
+        ...prev,
         name: values.name,
         phoneNumber: values.phoneNumber || "",
         email: values.email || "",
@@ -202,7 +207,6 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                     </FormItem>
                   )}
                 />
-                 {/* Previous customer status is not editable here, shown as description */}
               </div>
             ) : (
               <div>
@@ -337,10 +341,19 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                   <Button 
                     type="submit" 
                     className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting || customerData.name === "N/A"}
+                    disabled={problemForm.formState.isSubmitting || isTicketSubmitted || customerData.name === "N/A"}
                   >
-                    <Ticket className="mr-2 h-5 w-5" />
-                    Create Ticket
+                    {isTicketSubmitted ? (
+                      <>
+                        <Check className="mr-2 h-5 w-5" />
+                        Ticket Created!
+                      </>
+                    ) : (
+                      <>
+                        <Ticket className="mr-2 h-5 w-5" />
+                        Create Ticket
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
