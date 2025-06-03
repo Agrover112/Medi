@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -32,7 +31,7 @@ const initialCustomerInfo = {
   email: "jane.doe@example.com",
   dob: "1990-05-15",
   address: "123 Main St, Anytown, USA 12345",
-  status: "Returning", // "Returning Customer" badge implies a status
+  status: "Returning", // Status remains in data, but badge in header is removed
 };
 
 const customerDetailsSchema = z.object({
@@ -117,7 +116,7 @@ export default function CustomerInformationForm() {
   }
 
   return (
-    <Form {...customerDetailsForm}> {/* Moved FormProvider to wrap the entire Card */}
+    <Form {...customerDetailsForm}>
       <Card className="shadow-2xl rounded-xl">
         <CardHeader className="flex flex-col sm:flex-row items-start justify-between space-y-2 sm:space-y-0 pb-4">
           <div className="flex items-center space-x-4">
@@ -159,18 +158,7 @@ export default function CustomerInformationForm() {
           <div className="flex items-center space-x-2">
             {isEditing ? (
               <>
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Status (e.g., Returning)" {...field} className="text-xs p-1 h-auto w-32" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Status input field removed from here */}
                 <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)}>
                   <Save className="mr-2 h-4 w-4" /> Save
                 </Button>
@@ -180,7 +168,7 @@ export default function CustomerInformationForm() {
               </>
             ) : (
               <>
-                <Badge variant="outline">{customerData.status}</Badge>
+                {/* Status Badge removed from here */}
                 <Button variant="default" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Button>
@@ -191,7 +179,6 @@ export default function CustomerInformationForm() {
 
         <CardContent className="space-y-6">
           {isEditing ? (
-            // Removed nested Form and form tag here. Fields are now under the main FormProvider.
             <div className="space-y-3">
                 <FormField
                   control={customerDetailsForm.control}
@@ -249,6 +236,21 @@ export default function CustomerInformationForm() {
                     </FormItem>
                   )}
                 />
+                 {/* Status input field for customer details when editing - removed from header, can be placed here if needed */}
+                <FormField
+                  control={customerDetailsForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-3">
+                      {/* It might make more sense to have an icon for status if kept, or remove this field entirely */}
+                      <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Status:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Returning, New, VIP" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             </div>
           ) : (
             <div className="space-y-1">
@@ -262,7 +264,7 @@ export default function CustomerInformationForm() {
           <Separator />
 
           <div>
-            <Form {...problemForm}> {/* problemForm has its own FormProvider */}
+            <Form {...problemForm}>
               <form onSubmit={problemForm.handleSubmit(onSubmitProblem)} className="space-y-4">
                 <FormField
                   control={problemForm.control}
