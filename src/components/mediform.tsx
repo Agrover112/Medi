@@ -142,7 +142,6 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
       currentProblem: customerData.problem || "",
     });
     setIsEditing(false); 
-    // Reset problem submission state if initial data changes, ensuring button is fresh
     setIsProblemSubmitting(false);
   }, [customerData, customerDetailsForm, problemForm]);
 
@@ -152,25 +151,20 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     setIsProblemSubmitting(true);
 
     const updatedApiInfo: ApiCustomerInfo = {
-      ...initialData, // Preserve other details
+      ...initialData, 
       problem: values.currentProblem,
     };
     onUpdateCustomerInfo(updatedApiInfo, selectedIndex);
     
     toast({
       title: "Problem Updated!",
-      description: `Problem description for ${initialData.name} has been updated.`,
+      description: `Problem description for ${initialData.name} has been updated in this session.`,
       variant: "default"
     });
 
-    // No need to manually reset problemForm.isSubmitting, React Hook Form handles it.
-    // The button state can be controlled by `isProblemSubmitting` for UI feedback.
-    // The useEffect above will re-sync the form if initialData changes, 
-    // but here we specifically want to give submission feedback then potentially allow re-submission.
-    // If you want to prevent multiple submissions until data re-syncs, this state is useful.
      setTimeout(() => {
-        setIsProblemSubmitting(false); // Allow re-submission or further edits after a delay
-     }, 3000); // Re-enable after 3 seconds
+        setIsProblemSubmitting(false); 
+     }, 3000); 
   }
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
@@ -182,7 +176,6 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
         date_of_birth: values.dob || null,
         email: values.email || null,
         phone: values.phoneNumber || null,
-        // Preserve these from the original data as they are not part of this form
         previous_customer: initialData.previous_customer, 
         problem: initialData.problem, 
     };
@@ -191,7 +184,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     setIsEditing(false);
     toast({
       title: "Patient Details Updated!",
-      description: `Information for ${values.name} has been updated.`,
+      description: `Information for ${values.name} has been updated in this session.`,
       variant: "default"
     });
   }
@@ -243,7 +236,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
           <div className="flex items-center space-x-2">
             {isEditing ? (
               <>
-                <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)}>
                   <Save className="mr-2 h-4 w-4" /> Save
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleCancelEdit} className="border-border hover:bg-muted">
@@ -252,7 +245,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
               </>
             ) : (
               <>
-                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={isFormDisabled} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={isFormDisabled}>
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Button>
               </>
@@ -351,7 +344,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                             {...field}
                             rows={3}
                             className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive dark:text-destructive-foreground placeholder:text-destructive/70 dark:placeholder:text-destructive-foreground/70"
-                            disabled={isFormDisabled || isEditing} // Disable if main form is N/A or if details are being edited
+                            disabled={isFormDisabled || isEditing} 
                           />
                         </FormControl>
                       </Alert>
@@ -363,7 +356,8 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                 <div className="pt-4">
                   <Button 
                     type="submit" 
-                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                    variant="default"
+                    className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
                     disabled={problemForm.formState.isSubmitting || isProblemSubmitting || isFormDisabled || isEditing}
                   >
                     {isProblemSubmitting ? (
