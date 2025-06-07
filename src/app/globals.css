@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,25 +8,25 @@ body {
 
 @layer base {
   :root {
-    --background: oklch(1.0000 0 0);
-    --foreground: oklch(0.1288 0.0254 260.2252);
-    --card: oklch(1.0000 0 0);
-    --card-foreground: oklch(0.1288 0.0254 260.2252);
-    --popover: oklch(1.0000 0 0);
-    --popover-foreground: oklch(0.1288 0.0254 260.2252);
-    --primary: oklch(0.6626 0.1509 50.2524);
-    --primary-foreground: oklch(1.0000 0 0);
-    --secondary: oklch(0.9842 0.0034 247.8575);
-    --secondary-foreground: oklch(0.3090 0.0350 272.8192);
-    --muted: oklch(0.9683 0.0069 247.8956);
-    --muted-foreground: oklch(0.5574 0.0393 256.4017);
-    --accent: oklch(0.9683 0.0069 247.8956);
-    --accent-foreground: oklch(0.1288 0.0254 260.2252);
-    --destructive: oklch(0.6358 0.2088 25.4126);
-    --destructive-foreground: oklch(1.0000 0 0);
-    --border: oklch(0.9257 0.0126 255.5081);
-    --input: oklch(0.9257 0.0126 255.5081);
-    --ring: oklch(0.6626 0.1509 50.2524);
+    --background: 0 0% 94%; /* Light Grey for MediForm */
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 190 50% 75%; /* Soft Blue for MediForm */
+    --primary-foreground: 240 10% 3.9%; /* Dark text on soft blue */
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 85 15% 60%; /* Muted Green for MediForm */
+    --accent-foreground: 0 0% 98%; /* White text on muted green */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 190 50% 65%; /* Slightly darker blue for ring */
     
     --radius: 0.5rem;
 
@@ -37,15 +36,15 @@ body {
     --chart-4: oklch(0.8822 0.0403 298.1792);
     --chart-5: oklch(0.5608 0.1348 42.0584);
 
-    /* Sidebar colors */
-    --sidebar-background: oklch(0.9663 0.0080 98.8792);
-    --sidebar-foreground: oklch(0.3590 0.0051 106.6524);
-    --sidebar-primary: oklch(0.6171 0.1375 39.0427);
-    --sidebar-primary-foreground: oklch(0.9881 0 0);
-    --sidebar-accent: oklch(0.9245 0.0138 92.9892);
-    --sidebar-accent-foreground: oklch(0.3250 0 0);
-    --sidebar-border: oklch(0.9401 0 0);
-    --sidebar-ring: oklch(0.7731 0 0);
+    /* Sidebar colors for MediForm theme */
+    --sidebar-background: 0 0% 92%; 
+    --sidebar-foreground: 240 8% 20%;
+    --sidebar-primary: 190 50% 70%; 
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 85 15% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 87%;
+    --sidebar-ring: 190 50% 60%;
 
     /* Font variables */
     --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -64,26 +63,26 @@ body {
   }
 
   .dark {
-    --background: oklch(0.1288 0.0254 260.2252);
-    --foreground: oklch(0.9257 0.0126 255.5081);
-    --card: oklch(0.1288 0.0254 260.2252);
-    --card-foreground: oklch(0.9257 0.0126 255.5081);
-    --popover: oklch(0.1288 0.0254 260.2252);
-    --popover-foreground: oklch(0.9257 0.0126 255.5081);
-    --primary: oklch(0.6626 0.1509 50.2524);
-    --primary-foreground: oklch(1.0000 0 0);
-    --secondary: oklch(0.2781 0.0296 256.8480);
-    --secondary-foreground: oklch(0.9257 0.0126 255.5081);
-    --muted: oklch(0.2781 0.0296 256.8480);
-    --muted-foreground: oklch(0.7140 0.0205 262.9794);
-    --accent: oklch(0.2781 0.0296 256.8480);
-    --accent-foreground: oklch(0.9257 0.0126 255.5081);
-    --destructive: oklch(0.3997 0.1352 25.8101);
-    --destructive-foreground: oklch(0.9257 0.0126 255.5081);
-    --border: oklch(0.2781 0.0296 256.8480);
-    --input: oklch(0.2781 0.0296 256.8480);
-    --ring: oklch(0.6626 0.1509 50.2524);
-
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 190 50% 65%; /* Soft Blue for dark mode */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 85 20% 50%; /* Muted Green for dark mode */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 190 50% 75%; /* Lighter blue for ring in dark */
+    
     --radius: 0.5rem;
     
     --chart-1: oklch(0.5583 0.1276 42.9956);
@@ -92,15 +91,15 @@ body {
     --chart-4: oklch(0.3074 0.0516 289.3230);
     --chart-5: oklch(0.5608 0.1348 42.0584);
 
-    /* Sidebar colors */
-    --sidebar-background: oklch(0.2357 0.0024 67.7077);
-    --sidebar-foreground: oklch(0.8074 0.0142 93.0137);
-    --sidebar-primary: oklch(0.3250 0 0);
-    --sidebar-primary-foreground: oklch(0.9881 0 0);
-    --sidebar-accent: oklch(0.1680 0.0020 106.6177);
-    --sidebar-accent-foreground: oklch(0.8074 0.0142 93.0137);
-    --sidebar-border: oklch(0.9401 0 0);
-    --sidebar-ring: oklch(0.7731 0 0);
+    /* Sidebar colors for MediForm theme - dark mode */
+    --sidebar-background: 240 8% 10%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 190 50% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 85 20% 45%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 6% 13%;
+    --sidebar-ring: 190 50% 70%;
 
     /* Font variables */
     --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
