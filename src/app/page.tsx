@@ -1,10 +1,10 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle } from "lucide-react"; // Keep for potential future use
+import { Loader2, AlertTriangle } from "lucide-react";
 
 interface ApiDataItem {
   data: {
@@ -69,28 +69,66 @@ const mockCustomerApiData: ApiDataItem[] = [
       }
     },
     timestamp: "2024-07-18T11:00:00.000Z"
+  },
+  {
+    data: {
+      customer_info: {
+        name: "Erik Gustavsson",
+        address: null,
+        date_of_birth: "2001-03-10",
+        email: "erik.g@example.com",
+        phone: null,
+        previous_customer: false,
+        problem: "Follow-up for seasonal allergies."
+      }
+    },
+    timestamp: "2024-07-19T16:20:00.000Z"
   }
 ];
 
 export default function HomePage() {
-  const [allCustomerApiData, setAllCustomerApiData] = useState<ApiDataItem[]>(mockCustomerApiData);
+  const [allCustomerApiData, setAllCustomerApiData] = useState<ApiDataItem[]>([]);
   const [selectedCustomerIndex, setSelectedCustomerIndex] = useState<number>(0);
-  // isLoading and fetchError states are removed as we are using mock data
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    // If mock data is empty, set a default or handle appropriately
-    if (mockCustomerApiData.length === 0) {
-      // Potentially set some default state or error for no mock data
-      console.warn("Mock data is empty.");
-      setAllCustomerApiData([]); // Ensure it's an empty array
-    } else {
-      setAllCustomerApiData(mockCustomerApiData);
-      setSelectedCustomerIndex(0);
-    }
-  }, []); // Runs once on mount to initialize with mock data
+    // Simulate API call for mock data
+    setIsLoading(true);
+    setFetchError(null);
+    setTimeout(() => { // Simulate network delay
+      if (mockCustomerApiData.length === 0) {
+        console.warn("Mock data is empty. Displaying no data message.");
+        setAllCustomerApiData([]);
+        setFetchError("No mock patient data is available to display.");
+      } else {
+        setAllCustomerApiData(mockCustomerApiData);
+        setSelectedCustomerIndex(0); // Default to the first customer
+      }
+      setIsLoading(false);
+    }, 500);
+  }, []);
 
   const handleSelectHistoryItem = (index: number) => {
     setSelectedCustomerIndex(index);
+  };
+
+  const handleUpdateCustomerInfo = (updatedInfo: ApiCustomerInfo, index: number) => {
+    setAllCustomerApiData(prevData => {
+      const newData = [...prevData];
+      if (newData[index]) {
+        newData[index] = {
+          ...newData[index],
+          data: {
+            ...newData[index].data,
+            customer_info: updatedInfo
+          },
+          // Optionally update timestamp if you want to reflect the edit time
+          // timestamp: new Date().toISOString() 
+        };
+      }
+      return newData;
+    });
   };
 
   const selectedCustomerInfo = 
@@ -98,8 +136,39 @@ export default function HomePage() {
     ? allCustomerApiData[selectedCustomerIndex].data.customer_info 
     : null;
 
-  // Removed loading state display as data is now static
-  // Removed fetchError display as fetching is removed
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        <p className="mt-4 text-lg text-muted-foreground">Loading patient data...</p>
+      </main>
+    );
+  }
+
+  if (fetchError && allCustomerApiData.length === 0) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-background">
+        <div className="w-full max-w-md p-6 bg-destructive/10 border border-destructive text-destructive rounded-lg flex flex-col items-center">
+          <AlertTriangle className="h-10 w-10 mb-3" />
+          <h2 className="text-xl font-semibold mb-2">Error Loading Data</h2>
+          <p className="text-center mb-4">{fetchError}</p>
+        </div>
+      </main>
+    );
+  }
+  
+  if (allCustomerApiData.length === 0 && !selectedCustomerInfo) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-background">
+        <div className="w-full max-w-4xl mx-auto p-6 bg-card border border-border rounded-lg flex flex-col items-center shadow-xl">
+          <AlertTriangle className="h-10 w-10 mb-3 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mb-2 text-foreground">No Data Available</h2>
+          <p className="text-center text-muted-foreground mb-4">There is no mock patient data to display.</p>
+        </div>
+      </main>
+    );
+  }
+
 
   return (
     <main className="flex min-h-screen flex-col items-start justify-start p-4 md:p-8 bg-background">
@@ -111,27 +180,24 @@ export default function HomePage() {
           Patient Data Entry & Excel Export
         </p>
       </div>
-
-      {allCustomerApiData.length === 0 && !selectedCustomerInfo ? (
-         <div className="w-full max-w-4xl mx-auto p-6 bg-destructive/10 border border-destructive text-destructive rounded-lg flex flex-col items-center">
-          <AlertTriangle className="h-10 w-10 mb-3" />
-          <h2 className="text-xl font-semibold mb-2">No Data Available</h2>
-          <p className="text-center mb-4">There is no mock patient data to display.</p>
+      
+      <div className="w-full flex flex-col lg:flex-row gap-8">
+        <div className="lg:w-2/3 w-full">
+          <CustomerInformationForm 
+            initialData={selectedCustomerInfo} 
+            key={selectedCustomerIndex} // Ensures form re-initializes when selected customer changes
+            onUpdateCustomerInfo={handleUpdateCustomerInfo}
+            selectedIndex={selectedCustomerIndex}
+          />
         </div>
-      ) : (
-        <div className="w-full flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-2/3 w-full">
-            <CustomerInformationForm initialData={selectedCustomerInfo} key={selectedCustomerIndex} />
-          </div>
-          <div className="lg:w-1/3 w-full">
-            <FormHistory 
-              historyItems={allCustomerApiData}
-              onSelectHistoryItem={handleSelectHistoryItem}
-              currentIndex={selectedCustomerIndex}
-            />
-          </div>
+        <div className="lg:w-1/3 w-full">
+          <FormHistory 
+            historyItems={allCustomerApiData}
+            onSelectHistoryItem={handleSelectHistoryItem}
+            currentIndex={selectedCustomerIndex}
+          />
         </div>
-      )}
+      </div>
     </main>
   );
 }

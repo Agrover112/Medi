@@ -35,6 +35,8 @@ export interface ApiCustomerInfo {
 
 interface CustomerInformationFormProps {
   initialData: ApiCustomerInfo | null;
+  onUpdateCustomerInfo: (updatedInfo: ApiCustomerInfo, index: number) => void;
+  selectedIndex: number;
 }
 
 interface DisplayCustomerData {
@@ -51,7 +53,7 @@ const defaultDisplayData: DisplayCustomerData = {
   name: "N/A",
   phoneNumber: "",
   email: "",
-  dob: "", // Changed from "N/A" to allow empty string to better match form empty state
+  dob: "",
   address: "",
   previous_customer: false,
   problem: "",
@@ -92,10 +94,10 @@ const InfoLine: React.FC<InfoLineProps> = ({ icon: Icon, label, value, className
   </div>
 );
 
-export default function CustomerInformationForm({ initialData }: CustomerInformationFormProps) {
+export default function CustomerInformationForm({ initialData, onUpdateCustomerInfo, selectedIndex }: CustomerInformationFormProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState(false);
-  const [isTicketSubmitted, setIsTicketSubmitted] = React.useState(false);
+  const [isProblemSubmitting, setIsProblemSubmitting] = React.useState(false); // For problem form
 
   const customerData = React.useMemo((): DisplayCustomerData => {
     if (!initialData) return defaultDisplayData;
@@ -129,8 +131,6 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
   });
 
   React.useEffect(() => {
-    // This effect now correctly depends on customerData which is derived from initialData
-    // When initialData (and thus customerData) changes, reset the forms
     customerDetailsForm.reset({
       name: (customerData.name && customerData.name !== "N/A") ? customerData.name : "",
       phoneNumber: customerData.phoneNumber || "",
@@ -142,42 +142,57 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
       currentProblem: customerData.problem || "",
     });
     setIsEditing(false); 
+    // Reset problem submission state if initial data changes, ensuring button is fresh
+    setIsProblemSubmitting(false);
   }, [customerData, customerDetailsForm, problemForm]);
 
 
-  function onSubmitProblem(values: ProblemFormData) {
-    console.log("Problem submitted:", values);
+  async function onSubmitProblem(values: ProblemFormData) {
+    if (!initialData) return;
+    setIsProblemSubmitting(true);
+
+    const updatedApiInfo: ApiCustomerInfo = {
+      ...initialData, // Preserve other details
+      problem: values.currentProblem,
+    };
+    onUpdateCustomerInfo(updatedApiInfo, selectedIndex);
+    
     toast({
-      title: "Ticket Created!", // This should change to "Excel Generated" or similar later
-      description: `Problem reported: ${values.currentProblem.substring(0,50)}...`,
+      title: "Problem Updated!",
+      description: `Problem description for ${initialData.name} has been updated.`,
+      variant: "default"
     });
-    setIsTicketSubmitted(true);
-    setTimeout(() => {
-        setIsTicketSubmitted(false);
-    }, 3000); 
+
+    // No need to manually reset problemForm.isSubmitting, React Hook Form handles it.
+    // The button state can be controlled by `isProblemSubmitting` for UI feedback.
+    // The useEffect above will re-sync the form if initialData changes, 
+    // but here we specifically want to give submission feedback then potentially allow re-submission.
+    // If you want to prevent multiple submissions until data re-syncs, this state is useful.
+     setTimeout(() => {
+        setIsProblemSubmitting(false); // Allow re-submission or further edits after a delay
+     }, 3000); // Re-enable after 3 seconds
   }
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
-     // When saving, we are updating the local view. 
-     // With mock data, this won't persist unless we update the mock data source itself,
-     // which is complex for this component. For now, it updates the displayed data.
-    const updatedDisplayDataFromForm = {
-        ...customerData, // Retain problem and previous_customer from current display state
-        name: values.name,
-        phoneNumber: values.phoneNumber || "",
-        email: values.email || "",
-        dob: values.dob || "",
-        address: values.address || "",
-    };
-    // To reflect changes in the UI immediately if we were *not* relying on key-based re-render of this component
-    // we might do: setCustomerData(updatedDisplayDataFromForm);
-    // However, page.tsx controls the initialData prop which re-keys this component.
-    // For now, the effect is primarily local until a "save to backend/mock source" is implemented.
+    if (!initialData) return;
 
+    const updatedApiInfo: ApiCustomerInfo = {
+        name: values.name,
+        address: values.address || null,
+        date_of_birth: values.dob || null,
+        email: values.email || null,
+        phone: values.phoneNumber || null,
+        // Preserve these from the original data as they are not part of this form
+        previous_customer: initialData.previous_customer, 
+        problem: initialData.problem, 
+    };
+
+    onUpdateCustomerInfo(updatedApiInfo, selectedIndex);
     setIsEditing(false);
     toast({
-      title: "Details Updated (Locally)!",
-      description: "Patient information has been updated for this view.",
+      title: "Patient Details Updated!",
+      description: `Information for ${values.name} has been updated.`,
+      variant: "default"
     });
   }
 
@@ -197,7 +212,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
 
   return (
     <Form {...customerDetailsForm}>
-      <Card className="shadow-2xl rounded-xl">
+      <Card className="shadow-2xl rounded-xl bg-card">
         <CardHeader className="flex flex-col sm:flex-row items-start justify-between space-y-2 sm:space-y-0 pb-4">
           <div className="flex items-center space-x-4">
             <User className="h-10 w-10 text-primary" />
@@ -209,7 +224,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto" />
+                        <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto bg-input text-foreground border-border focus:ring-primary" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -218,7 +233,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
               </div>
             ) : (
               <div>
-                <CardTitle className="text-2xl font-bold">{customerData.name}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-foreground">{customerData.name}</CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
                   {customerData.previous_customer ? "Returning Patient" : "New Patient"}
                 </CardDescription>
@@ -228,16 +243,16 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
           <div className="flex items-center space-x-2">
             {isEditing ? (
               <>
-                <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)}>
+                <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Save className="mr-2 h-4 w-4" /> Save
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                <Button variant="outline" size="sm" onClick={handleCancelEdit} className="border-border hover:bg-muted">
                   <XCircle className="mr-2 h-4 w-4" /> Cancel
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={isFormDisabled}>
+                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={isFormDisabled} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Button>
               </>
@@ -256,7 +271,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                       <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Phone Number:</FormLabel>
                       <FormControl>
-                        <Input placeholder="123-456-7890" {...field} />
+                        <Input placeholder="123-456-7890" {...field} className="bg-input text-foreground border-border focus:ring-primary"/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -270,7 +285,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                       <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Email Address:</FormLabel>
                       <FormControl>
-                        <Input placeholder="patient@example.com" {...field} />
+                        <Input placeholder="patient@example.com" {...field} className="bg-input text-foreground border-border focus:ring-primary"/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -284,7 +299,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                       <CalendarDays className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Date of Birth:</FormLabel>
                       <FormControl>
-                        <Input placeholder="YYYY-MM-DD" {...field} />
+                        <Input placeholder="YYYY-MM-DD" {...field} className="bg-input text-foreground border-border focus:ring-primary"/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -298,7 +313,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                       <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Address:</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="123 Main St, Anytown, USA 12345" {...field} rows={2} className="resize-none" />
+                        <Textarea placeholder="123 Main St, Anytown, USA 12345" {...field} rows={2} className="resize-none bg-input text-foreground border-border focus:ring-primary" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -314,7 +329,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
             </div>
           )}
 
-          <Separator />
+          <Separator className="bg-border"/>
 
           <div>
             <Form {...problemForm}>
@@ -328,15 +343,15 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                         <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
                         Detailed Problem Description
                       </FormLabel>
-                      <Alert variant="destructive" className="p-0">
+                      <Alert variant="destructive" className="p-0 bg-destructive/5 border-destructive/50">
                         <FormControl className="p-0 m-0">
                           <Textarea
                             data-ai-hint="medical condition"
                             placeholder="Describe the current problem or reason for appointment..."
                             {...field}
                             rows={3}
-                            className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none"
-                            disabled={isFormDisabled}
+                            className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive-foreground placeholder:text-destructive-foreground/70"
+                            disabled={isFormDisabled || isEditing} // Disable if main form is N/A or if details are being edited
                           />
                         </FormControl>
                       </Alert>
@@ -349,17 +364,17 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                   <Button 
                     type="submit" 
                     className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting || isTicketSubmitted || isFormDisabled}
+                    disabled={problemForm.formState.isSubmitting || isProblemSubmitting || isFormDisabled || isEditing}
                   >
-                    {isTicketSubmitted ? (
+                    {isProblemSubmitting ? (
                       <>
                         <Check className="mr-2 h-5 w-5" />
-                        Submitted! 
+                        Updated! 
                       </>
                     ) : (
                       <>
                         <Ticket className="mr-2 h-5 w-5" />
-                        Submit Information
+                        Update Problem Description
                       </>
                     )}
                   </Button>
@@ -372,3 +387,4 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
     </Form>
   );
 }
+
