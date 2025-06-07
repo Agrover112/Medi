@@ -2,12 +2,17 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { History, UserCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import type { ApiCustomerInfo } from '@/components/mediform'; // Assuming ApiCustomerInfo is exported
+import type { ApiCustomerInfo } from '@/components/mediform';
+import {
+  SidebarHeader,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroupLabel,
+} from '@/components/ui/sidebar'; // Assuming these are exported correctly
 
 interface ApiDataItem {
   data: {
@@ -23,59 +28,60 @@ interface FormHistoryProps {
 }
 
 export default function FormHistory({ historyItems, onSelectHistoryItem, currentIndex }: FormHistoryProps) {
-  if (!historyItems || historyItems.length === 0) {
-    return (
-      <Card className="shadow-lg rounded-xl h-full">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xl font-semibold flex items-center">
-            <History className="mr-2 h-5 w-5 text-primary" />
-            Form History
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No past entries available.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="shadow-lg rounded-xl h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-semibold flex items-center">
-          <History className="mr-2 h-5 w-5 text-primary" />
-          Form History
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 flex-grow">
-        <ScrollArea className="h-[calc(100vh-250px)] pr-3"> {/* Adjust height as needed */}
-          <div className="space-y-3">
-            {historyItems.map((item, index) => (
-              <Button
-                key={item.timestamp + '-' + index} // More robust key
-                variant={index === currentIndex ? "default" : "outline"}
-                className="w-full justify-start h-auto py-3 px-4 text-left flex flex-col items-start space-y-1 shadow-sm hover:shadow-md transition-shadow"
-                onClick={() => onSelectHistoryItem(index)}
-              >
-                <div className="flex items-center w-full">
-                   <UserCircle className="mr-2 h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                  <span className={`font-medium ${index === currentIndex ? 'text-primary-foreground' : 'text-foreground'}`}>
-                    {item.data.customer_info.name || "Unnamed Customer"}
-                  </span>
-                </div>
-                <p className={`text-xs ${index === currentIndex ? 'text-primary-foreground/80' : 'text-muted-foreground'} pl-7`}>
-                  {format(new Date(item.timestamp), "MMM d, yyyy 'at' h:mm a")}
-                </p>
-                 {item.data.customer_info.problem && (
-                   <p className={`text-xs italic truncate w-full ${index === currentIndex ? 'text-primary-foreground/70' : 'text-muted-foreground/80'} pl-7`}>
-                    Problem: {item.data.customer_info.problem.substring(0, 50)}{item.data.customer_info.problem.length > 50 ? '...' : ''}
-                  </p>
-                 )}
-              </Button>
-            ))}
+    <div className="flex h-full flex-col">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:justify-center">
+          <History className="mr-2 h-5 w-5 text-primary group-data-[collapsible=icon]:mr-0" />
+          <span className="group-data-[collapsible=icon]:hidden">Form History</span>
+        </div>
+      </SidebarHeader>
+      <SidebarContent className="flex-1 overflow-y-auto p-2">
+        {(!historyItems || historyItems.length === 0) ? (
+          <div className="p-2 text-sm text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
+            No past entries available.
           </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+        ) : (
+          <SidebarMenu>
+            {historyItems.map((item, index) => (
+              <SidebarMenuItem key={item.timestamp + '-' + index}>
+                <SidebarMenuButton
+                  onClick={() => onSelectHistoryItem(index)}
+                  isActive={index === currentIndex}
+                  className="w-full justify-start text-left h-auto py-2.5 px-3 group-data-[collapsible=icon]:justify-center"
+                  tooltip={{
+                    content: (
+                      <>
+                        <p>{item.data.customer_info.name || "Unnamed Customer"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(item.timestamp), "MMM d, h:mm a")}
+                        </p>
+                      </>
+                    ),
+                    side: "right",
+                    align: "center",
+                  }}
+                >
+                  <UserCircle className="h-5 w-5 flex-shrink-0 text-sidebar-foreground/80" />
+                  <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                    <span className="font-medium">
+                      {item.data.customer_info.name || "Unnamed Customer"}
+                    </span>
+                    <span className="text-xs text-sidebar-foreground/70">
+                      {format(new Date(item.timestamp), "MMM d, yyyy 'at' h:mm a")}
+                    </span>
+                    {item.data.customer_info.problem && (
+                      <span className="text-xs italic truncate w-full text-sidebar-foreground/60">
+                        {item.data.customer_info.problem.substring(0, 30)}{item.data.customer_info.problem.length > 30 ? '...' : ''}
+                      </span>
+                    )}
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        )}
+      </SidebarContent>
+    </div>
   );
 }

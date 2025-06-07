@@ -1,10 +1,12 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, PanelLeft } from "lucide-react";
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar"; // Assuming SidebarHeader is for sidebar internal use, using an alias
+import { Button } from "@/components/ui/button";
 
 interface ApiDataItem {
   data: {
@@ -93,17 +95,15 @@ export default function HomePage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API call for mock data
     setIsLoading(true);
     setFetchError(null);
-    setTimeout(() => { // Simulate network delay
+    setTimeout(() => {
       if (mockCustomerApiData.length === 0) {
-        console.warn("Mock data is empty. Displaying no data message.");
         setAllCustomerApiData([]);
         setFetchError("No mock patient data is available to display.");
       } else {
         setAllCustomerApiData(mockCustomerApiData);
-        setSelectedCustomerIndex(0); // Default to the first customer
+        setSelectedCustomerIndex(0);
       }
       setIsLoading(false);
     }, 500);
@@ -123,18 +123,16 @@ export default function HomePage() {
             ...newData[index].data,
             customer_info: updatedInfo
           },
-          // Optionally update timestamp if you want to reflect the edit time
-          // timestamp: new Date().toISOString() 
         };
       }
       return newData;
     });
   };
 
-  const selectedCustomerInfo = 
-    allCustomerApiData && allCustomerApiData.length > selectedCustomerIndex 
-    ? allCustomerApiData[selectedCustomerIndex].data.customer_info 
-    : null;
+  const selectedCustomerInfo =
+    allCustomerApiData && allCustomerApiData.length > selectedCustomerIndex
+      ? allCustomerApiData[selectedCustomerIndex].data.customer_info
+      : null;
 
   if (isLoading) {
     return (
@@ -144,11 +142,12 @@ export default function HomePage() {
       </main>
     );
   }
-
+  
+  // Error states can be rendered within SidebarInset or handled before SidebarProvider for full page errors
   if (fetchError && allCustomerApiData.length === 0) {
-    return (
+     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-background">
-        <div className="w-full max-w-md p-6 bg-destructive/10 border border-destructive text-destructive rounded-lg flex flex-col items-center">
+        <div className="w-full max-w-md p-6 bg-destructive/10 border border-destructive text-destructive rounded-lg flex flex-col items-center shadow-xl">
           <AlertTriangle className="h-10 w-10 mb-3" />
           <h2 className="text-xl font-semibold mb-2">Error Loading Data</h2>
           <p className="text-center mb-4">{fetchError}</p>
@@ -156,9 +155,9 @@ export default function HomePage() {
       </main>
     );
   }
-  
-  if (allCustomerApiData.length === 0 && !selectedCustomerInfo) {
-    return (
+
+  if (allCustomerApiData.length === 0 && !selectedCustomerInfo && !isLoading) {
+     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-background">
         <div className="w-full max-w-4xl mx-auto p-6 bg-card border border-border rounded-lg flex flex-col items-center shadow-xl">
           <AlertTriangle className="h-10 w-10 mb-3 text-muted-foreground" />
@@ -169,35 +168,41 @@ export default function HomePage() {
     );
   }
 
-
   return (
-    <main className="flex min-h-screen flex-col items-start justify-start p-4 md:p-8 bg-background">
-      <div className="w-full text-center mb-10 mt-4">
-        <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground">
-          MediForm
-        </h1>
-        <p className="text-lg text-muted-foreground mt-2">
-          Patient Data Entry & Excel Export
-        </p>
-      </div>
-      
-      <div className="w-full flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-2/3 w-full">
-          <CustomerInformationForm 
-            initialData={selectedCustomerInfo} 
-            key={selectedCustomerIndex} // Ensures form re-initializes when selected customer changes
-            onUpdateCustomerInfo={handleUpdateCustomerInfo}
-            selectedIndex={selectedCustomerIndex}
-          />
-        </div>
-        <div className="lg:w-1/3 w-full">
-          <FormHistory 
-            historyItems={allCustomerApiData}
-            onSelectHistoryItem={handleSelectHistoryItem}
-            currentIndex={selectedCustomerIndex}
-          />
-        </div>
-      </div>
-    </main>
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar collapsible="icon" className="bg-sidebar text-sidebar-foreground">
+        <FormHistory
+          historyItems={allCustomerApiData}
+          onSelectHistoryItem={handleSelectHistoryItem}
+          currentIndex={selectedCustomerIndex}
+        />
+      </Sidebar>
+      <SidebarInset className="bg-background">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
+          <SidebarTrigger asChild className="md:hidden">
+            <Button size="icon" variant="outline">
+              <PanelLeft />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SidebarTrigger>
+          <div className="flex flex-col">
+            <h1 className="text-2xl md:text-3xl font-headline font-bold text-foreground">
+              MediForm
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Patient Data Entry
+            </p>
+          </div>
+        </header>
+        <main className="flex-1 overflow-auto p-4 md:p-6">
+            <CustomerInformationForm
+              initialData={selectedCustomerInfo}
+              key={selectedCustomerIndex}
+              onUpdateCustomerInfo={handleUpdateCustomerInfo}
+              selectedIndex={selectedCustomerIndex}
+            />
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
