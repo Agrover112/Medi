@@ -97,7 +97,7 @@ const InfoLine: React.FC<InfoLineProps> = ({ icon: Icon, label, value, className
 export default function CustomerInformationForm({ initialData, onUpdateCustomerInfo, selectedIndex }: CustomerInformationFormProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = React.useState(false);
-  const [isProblemSubmitting, setIsProblemSubmitting] = React.useState(false); // For problem form
+  const [isProblemSubmitting, setIsProblemSubmitting] = React.useState(false); 
 
   const customerData = React.useMemo((): DisplayCustomerData => {
     if (!initialData) return defaultDisplayData;
@@ -205,7 +205,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
 
   return (
     <Form {...customerDetailsForm}>
-      <Card className="shadow-2xl rounded-xl bg-card">
+      <Card className="shadow-2xl rounded-xl">
         <CardHeader className="flex flex-col sm:flex-row items-start justify-between space-y-2 sm:space-y-0 pb-4">
           <div className="flex items-center space-x-4">
             <User className="h-10 w-10 text-primary" />
@@ -217,7 +217,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto bg-input text-foreground border-border focus:ring-primary" />
+                        <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -226,8 +226,8 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
               </div>
             ) : (
               <div>
-                <CardTitle className="text-2xl font-bold text-foreground">{customerData.name}</CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
+                <CardTitle className="text-2xl font-bold">{customerData.name}</CardTitle>
+                <CardDescription>
                   {customerData.previous_customer ? "Returning Patient" : "New Patient"}
                 </CardDescription>
               </div>
@@ -239,7 +239,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                 <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)}>
                   <Save className="mr-2 h-4 w-4" /> Save
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleCancelEdit} className="border-border hover:bg-muted">
+                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
                   <XCircle className="mr-2 h-4 w-4" /> Cancel
                 </Button>
               </>
@@ -264,7 +264,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                       <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Phone Number:</FormLabel>
                       <FormControl>
-                        <Input placeholder="123-456-7890" {...field} className="bg-input text-foreground border-border focus:ring-primary"/>
+                        <Input placeholder="123-456-7890" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -278,7 +278,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                       <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Email Address:</FormLabel>
                       <FormControl>
-                        <Input placeholder="patient@example.com" {...field} className="bg-input text-foreground border-border focus:ring-primary"/>
+                        <Input placeholder="patient@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -292,7 +292,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                       <CalendarDays className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Date of Birth:</FormLabel>
                       <FormControl>
-                        <Input placeholder="YYYY-MM-DD" {...field} className="bg-input text-foreground border-border focus:ring-primary"/>
+                        <Input placeholder="YYYY-MM-DD" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -306,7 +306,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                       <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Address:</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="123 Main St, Anytown, USA 12345" {...field} rows={2} className="resize-none bg-input text-foreground border-border focus:ring-primary" />
+                        <Textarea placeholder="123 Main St, Anytown, USA 12345" {...field} rows={2} className="resize-none" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -322,7 +322,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
             </div>
           )}
 
-          <Separator className="bg-border"/>
+          <Separator />
 
           <div>
             <Form {...problemForm}>
@@ -332,7 +332,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                   name="currentProblem"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center text-md font-semibold text-foreground">
+                      <FormLabel className="flex items-center text-md font-semibold">
                         <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
                         Detailed Problem Description
                       </FormLabel>
@@ -381,4 +381,3 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     </Form>
   );
 }
-
