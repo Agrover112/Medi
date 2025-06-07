@@ -3,12 +3,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
-import FormHistory from '@/components/form-history'; // New component
+import FormHistory from '@/components/form-history';
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, History as HistoryIcon } from "lucide-react"; // Added HistoryIcon
+import { Loader2, AlertTriangle, History as HistoryIcon } from "lucide-react";
 import { format } from 'date-fns';
 
-// Define the expected structure for a single customer's info from the API
 interface ApiDataItem {
   data: {
     customer_info: ApiCustomerInfo;
@@ -29,27 +28,34 @@ export default function HomePage() {
       const response = await fetch('https://backend.hackaton.runcarsnowpen.work/get_all', { cache: 'no-store' });
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Failed to fetch customer data:", response.statusText, errorText);
-        setFetchError(`Server error: ${response.statusText}. ${errorText}`);
+        console.error("Failed to fetch customer data (server response not OK):", response.statusText, errorText);
+        const specificMessage = `Server error: ${response.statusText}. ${errorText || 'No additional error message from server.'}`;
+        console.log("Setting user-facing fetch error:", specificMessage);
+        setFetchError(specificMessage);
+        setAllCustomerApiData([]); 
       } else {
         const data: ApiDataItem[] = await response.json();
         if (data && data.length > 0) {
           setAllCustomerApiData(data);
-          setSelectedCustomerIndex(0); // Default to the first/latest customer
+          setSelectedCustomerIndex(0); 
         } else {
           console.warn("Fetched data is empty or not in the expected format:", data);
-          setAllCustomerApiData([]); // Set to empty array if no data
+          setAllCustomerApiData([]); 
           setFetchError("No customer data found or data is not in the expected format.");
         }
       }
     } catch (error: any) {
-      console.error("Error fetching customer data:", error);
+      console.error("Error fetching customer data (raw error):", error);
       if (error.message.includes("Failed to fetch")) {
-        setFetchError("Failed to fetch data. Please check your network connection or if the backend server is reachable. CORS issues might also cause this.");
+        const specificMessage = "Failed to fetch data. Please check your network connection or if the backend server is reachable (e.g., server down, CORS policy). See browser console for more details.";
+        console.log("Setting user-facing fetch error:", specificMessage);
+        setFetchError(specificMessage);
       } else {
-        setFetchError(`An error occurred while fetching data: ${error.message}`);
+        const specificMessage = `An unexpected error occurred while fetching data: ${error.message}`;
+        console.log("Setting user-facing fetch error:", specificMessage);
+        setFetchError(specificMessage);
       }
-      setAllCustomerApiData([]); // Set to empty array on error
+      setAllCustomerApiData([]); 
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +94,7 @@ export default function HomePage() {
         </p>
       </div>
 
-      {fetchError && !allCustomerApiData?.length ? (
+      {fetchError ? (
          <div className="w-full max-w-4xl mx-auto p-6 bg-destructive/10 border border-destructive text-destructive rounded-lg flex flex-col items-center">
           <AlertTriangle className="h-10 w-10 mb-3" />
           <h2 className="text-xl font-semibold mb-2">Error Fetching Data</h2>
