@@ -24,12 +24,12 @@ import { Separator } from "@/components/ui/separator";
 import { Alert } from "@/components/ui/alert";
 
 // Define the expected structure for a single customer's info from the API
-interface ApiCustomerInfo {
+export interface ApiCustomerInfo { // Exporting for use in FormHistory
   name: string;
-  address: string;
-  date_of_birth: string;
-  email: string;
-  phone: string;
+  address: string | null; // Allow null
+  date_of_birth: string | null; // Allow null
+  email: string | null; // Allow null
+  phone: string | null; // Allow null
   previous_customer: boolean;
   problem: string;
 }
@@ -63,15 +63,15 @@ const customerDetailsSchema = z.object({
   name: z.string().min(1, { message: "Name must be at least 1 character." }),
   phoneNumber: z.string().optional(),
   email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal("")),
-  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date of birth must be in YYYY-MM-DD format." }),
+  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date of birth must be in YYYY-MM-DD format." }).optional().or(z.literal("")), // Allow empty
   address: z.string().optional(),
 });
 
 type CustomerDetailsFormData = z.infer<typeof customerDetailsSchema>;
 
 const problemFormSchema = z.object({
-  currentProblem: z.string().min(10, {
-    message: "Problem description must be at least 10 characters.",
+  currentProblem: z.string().min(1, {
+    message: "Problem description must be at least 1 character.",
   }),
 });
 
@@ -80,7 +80,7 @@ type ProblemFormData = z.infer<typeof problemFormSchema>;
 interface InfoLineProps {
   icon: React.ElementType;
   label: string;
-  value: string;
+  value: string | null | undefined; // Allow null/undefined
   className?: string;
 }
 
@@ -111,24 +111,24 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
       problem: apiData.problem || defaultDisplayData.problem,
     };
   }, []);
-
+  
   const [customerData, setCustomerData] = React.useState<DisplayCustomerData>(() => mapApiToDisplayData(initialData));
 
   const customerDetailsForm = useForm<CustomerDetailsFormData>({
     resolver: zodResolver(customerDetailsSchema),
     defaultValues: {
-      name: customerData.name === "N/A" ? "" : customerData.name,
-      phoneNumber: customerData.phoneNumber,
-      email: customerData.email,
-      dob: customerData.dob === "N/A" ? "" : customerData.dob,
-      address: customerData.address,
+      name: (initialData?.name && initialData.name !== "N/A") ? initialData.name : "",
+      phoneNumber: initialData?.phone || "",
+      email: initialData?.email || "",
+      dob: (initialData?.date_of_birth && initialData.date_of_birth !== "N/A") ? initialData.date_of_birth : "",
+      address: initialData?.address || "",
     },
   });
 
   const problemForm = useForm<ProblemFormData>({
     resolver: zodResolver(problemFormSchema),
     defaultValues: {
-      currentProblem: customerData.problem,
+      currentProblem: initialData?.problem || "",
     },
   });
 
@@ -136,16 +136,18 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
     const newDisplayData = mapApiToDisplayData(initialData);
     setCustomerData(newDisplayData);
     customerDetailsForm.reset({
-      name: newDisplayData.name === "N/A" ? "" : newDisplayData.name,
+      name: (newDisplayData.name && newDisplayData.name !== "N/A") ? newDisplayData.name : "",
       phoneNumber: newDisplayData.phoneNumber,
       email: newDisplayData.email,
-      dob: newDisplayData.dob === "N/A" ? "" : newDisplayData.dob,
+      dob: (newDisplayData.dob && newDisplayData.dob !== "N/A") ? newDisplayData.dob : "",
       address: newDisplayData.address,
     });
     problemForm.reset({
       currentProblem: newDisplayData.problem,
     });
+    setIsEditing(false); // Exit edit mode when data changes
   }, [initialData, customerDetailsForm, problemForm, mapApiToDisplayData]);
+
 
   function onSubmitProblem(values: ProblemFormData) {
     console.log("Problem submitted:", values);
@@ -156,36 +158,44 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
     setIsTicketSubmitted(true);
     setTimeout(() => {
         setIsTicketSubmitted(false);
-        // problemForm.reset({ currentProblem: customerData.problem }); // Optionally reset to initial or clear
-    }, 3000); // Show success message for 3 seconds
+    }, 3000); 
   }
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
-    setCustomerData(prev => ({
-        ...prev,
+    const updatedDisplayData = {
+        ...customerData, // Retain previous_customer and problem from current display state
         name: values.name,
         phoneNumber: values.phoneNumber || "",
         email: values.email || "",
-        dob: values.dob,
+        dob: values.dob || "",
         address: values.address || "",
-    }));
+    };
+    setCustomerData(updatedDisplayData);
+    // Note: This only updates local state. API update would be needed for persistence.
+    // For example, if initialData came from a parent that manages API calls:
+    // onUpdateCustomer(updatedDisplayData); // Hypothetical parent update function
+    
     setIsEditing(false);
     toast({
       title: "Customer Details Updated!",
-      description: "The customer information has been saved locally.",
+      description: "The customer information has been updated locally.",
     });
   }
 
   function handleCancelEdit() {
+    // Reset form to currently displayed data (which is derived from initialData)
     customerDetailsForm.reset({
-        name: customerData.name === "N/A" ? "" : customerData.name,
+        name: (customerData.name && customerData.name !== "N/A") ? customerData.name : "",
         phoneNumber: customerData.phoneNumber,
         email: customerData.email,
-        dob: customerData.dob === "N/A" ? "" : customerData.dob,
+        dob: (customerData.dob && customerData.dob !== "N/A") ? customerData.dob : "",
         address: customerData.address,
     });
     setIsEditing(false);
   }
+
+  const isFormDisabled = customerData.name === "N/A" || !initialData;
+
 
   return (
     <Form {...customerDetailsForm}>
@@ -229,7 +239,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
               </>
             ) : (
               <>
-                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={customerData.name === "N/A"}>
+                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={isFormDisabled}>
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Button>
               </>
@@ -328,7 +338,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                             {...field}
                             rows={3}
                             className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none"
-                            disabled={customerData.name === "N/A"}
+                            disabled={isFormDisabled}
                           />
                         </FormControl>
                       </Alert>
@@ -341,7 +351,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                   <Button 
                     type="submit" 
                     className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting || isTicketSubmitted || customerData.name === "N/A"}
+                    disabled={problemForm.formState.isSubmitting || isTicketSubmitted || isFormDisabled}
                   >
                     {isTicketSubmitted ? (
                       <>
@@ -364,3 +374,4 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
     </Form>
   );
 }
+
