@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
 import { Loader2, AlertTriangle, PanelLeft } from "lucide-react";
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar"; // Assuming SidebarHeader is for sidebar internal use, using an alias
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
 interface ApiDataItem {
@@ -143,7 +143,6 @@ export default function HomePage() {
     );
   }
   
-  // Error states can be rendered within SidebarInset or handled before SidebarProvider for full page errors
   if (fetchError && allCustomerApiData.length === 0) {
      return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-background">
@@ -178,14 +177,16 @@ export default function HomePage() {
         />
       </Sidebar>
       <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
-          <SidebarTrigger asChild className="md:hidden">
-            <Button size="icon" variant="outline">
-              <PanelLeft />
-              <span className="sr-only">Toggle Menu</span>
-            </Button>
-          </SidebarTrigger>
-          <div className="flex flex-col">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2">
+          <div className="flex-shrink-0 md:hidden">
+            <SidebarTrigger asChild>
+              <Button size="icon" variant="outline">
+                <PanelLeft />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SidebarTrigger>
+          </div>
+          <div className="flex flex-1 flex-col items-center text-center">
             <h1 className="text-2xl md:text-3xl font-headline font-bold text-foreground">
               MediForm
             </h1>
@@ -193,6 +194,7 @@ export default function HomePage() {
               Patient Data Entry
             </p>
           </div>
+          <div className="w-10 flex-shrink-0 md:hidden" />
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
             <CustomerInformationForm
