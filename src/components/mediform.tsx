@@ -23,13 +23,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Alert } from "@/components/ui/alert";
 
-// Define the expected structure for a single customer's info from the API
-export interface ApiCustomerInfo { // Exporting for use in FormHistory
+export interface ApiCustomerInfo { 
   name: string;
-  address: string | null; // Allow null
-  date_of_birth: string | null; // Allow null
-  email: string | null; // Allow null
-  phone: string | null; // Allow null
+  address: string | null; 
+  date_of_birth: string | null; 
+  email: string | null; 
+  phone: string | null; 
   previous_customer: boolean;
   problem: string;
 }
@@ -38,7 +37,6 @@ interface CustomerInformationFormProps {
   initialData: ApiCustomerInfo | null;
 }
 
-// Structure for display state
 interface DisplayCustomerData {
   name: string;
   phoneNumber: string;
@@ -53,7 +51,7 @@ const defaultDisplayData: DisplayCustomerData = {
   name: "N/A",
   phoneNumber: "",
   email: "",
-  dob: "N/A",
+  dob: "", // Changed from "N/A" to allow empty string to better match form empty state
   address: "",
   previous_customer: false,
   problem: "",
@@ -63,7 +61,7 @@ const customerDetailsSchema = z.object({
   name: z.string().min(1, { message: "Name must be at least 1 character." }),
   phoneNumber: z.string().optional(),
   email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal("")),
-  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date of birth must be in YYYY-MM-DD format." }).optional().or(z.literal("")), // Allow empty
+  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date of birth must be in YYYY-MM-DD format." }).optional().or(z.literal("")),
   address: z.string().optional(),
 });
 
@@ -80,7 +78,7 @@ type ProblemFormData = z.infer<typeof problemFormSchema>;
 interface InfoLineProps {
   icon: React.ElementType;
   label: string;
-  value: string | null | undefined; // Allow null/undefined
+  value: string | null | undefined;
   className?: string;
 }
 
@@ -99,60 +97,58 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
   const [isEditing, setIsEditing] = React.useState(false);
   const [isTicketSubmitted, setIsTicketSubmitted] = React.useState(false);
 
-  const mapApiToDisplayData = React.useCallback((apiData: ApiCustomerInfo | null): DisplayCustomerData => {
-    if (!apiData) return defaultDisplayData;
+  const customerData = React.useMemo((): DisplayCustomerData => {
+    if (!initialData) return defaultDisplayData;
     return {
-      name: apiData.name || defaultDisplayData.name,
-      phoneNumber: apiData.phone || defaultDisplayData.phoneNumber,
-      email: apiData.email || defaultDisplayData.email,
-      dob: apiData.date_of_birth || defaultDisplayData.dob,
-      address: apiData.address || defaultDisplayData.address,
-      previous_customer: apiData.previous_customer,
-      problem: apiData.problem || defaultDisplayData.problem,
+      name: initialData.name || defaultDisplayData.name,
+      phoneNumber: initialData.phone || defaultDisplayData.phoneNumber,
+      email: initialData.email || defaultDisplayData.email,
+      dob: initialData.date_of_birth || defaultDisplayData.dob,
+      address: initialData.address || defaultDisplayData.address,
+      previous_customer: initialData.previous_customer,
+      problem: initialData.problem || defaultDisplayData.problem,
     };
-  }, []);
+  }, [initialData]);
   
-  const [customerData, setCustomerData] = React.useState<DisplayCustomerData>(() => mapApiToDisplayData(initialData));
-
   const customerDetailsForm = useForm<CustomerDetailsFormData>({
     resolver: zodResolver(customerDetailsSchema),
     defaultValues: {
-      name: (initialData?.name && initialData.name !== "N/A") ? initialData.name : "",
-      phoneNumber: initialData?.phone || "",
-      email: initialData?.email || "",
-      dob: (initialData?.date_of_birth && initialData.date_of_birth !== "N/A") ? initialData.date_of_birth : "",
-      address: initialData?.address || "",
+      name: (customerData.name && customerData.name !== "N/A") ? customerData.name : "",
+      phoneNumber: customerData.phoneNumber || "",
+      email: customerData.email || "",
+      dob: (customerData.dob && customerData.dob !== "N/A") ? customerData.dob : "",
+      address: customerData.address || "",
     },
   });
 
   const problemForm = useForm<ProblemFormData>({
     resolver: zodResolver(problemFormSchema),
     defaultValues: {
-      currentProblem: initialData?.problem || "",
+      currentProblem: customerData.problem || "",
     },
   });
 
   React.useEffect(() => {
-    const newDisplayData = mapApiToDisplayData(initialData);
-    setCustomerData(newDisplayData);
+    // This effect now correctly depends on customerData which is derived from initialData
+    // When initialData (and thus customerData) changes, reset the forms
     customerDetailsForm.reset({
-      name: (newDisplayData.name && newDisplayData.name !== "N/A") ? newDisplayData.name : "",
-      phoneNumber: newDisplayData.phoneNumber,
-      email: newDisplayData.email,
-      dob: (newDisplayData.dob && newDisplayData.dob !== "N/A") ? newDisplayData.dob : "",
-      address: newDisplayData.address,
+      name: (customerData.name && customerData.name !== "N/A") ? customerData.name : "",
+      phoneNumber: customerData.phoneNumber || "",
+      email: customerData.email || "",
+      dob: (customerData.dob && customerData.dob !== "N/A") ? customerData.dob : "", 
+      address: customerData.address || "",
     });
     problemForm.reset({
-      currentProblem: newDisplayData.problem,
+      currentProblem: customerData.problem || "",
     });
-    setIsEditing(false); // Exit edit mode when data changes
-  }, [initialData, customerDetailsForm, problemForm, mapApiToDisplayData]);
+    setIsEditing(false); 
+  }, [customerData, customerDetailsForm, problemForm]);
 
 
   function onSubmitProblem(values: ProblemFormData) {
     console.log("Problem submitted:", values);
     toast({
-      title: "Ticket Created!",
+      title: "Ticket Created!", // This should change to "Excel Generated" or similar later
       description: `Problem reported: ${values.currentProblem.substring(0,50)}...`,
     });
     setIsTicketSubmitted(true);
@@ -162,28 +158,30 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
   }
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
-    const updatedDisplayData = {
-        ...customerData, // Retain previous_customer and problem from current display state
+     // When saving, we are updating the local view. 
+     // With mock data, this won't persist unless we update the mock data source itself,
+     // which is complex for this component. For now, it updates the displayed data.
+    const updatedDisplayDataFromForm = {
+        ...customerData, // Retain problem and previous_customer from current display state
         name: values.name,
         phoneNumber: values.phoneNumber || "",
         email: values.email || "",
         dob: values.dob || "",
         address: values.address || "",
     };
-    setCustomerData(updatedDisplayData);
-    // Note: This only updates local state. API update would be needed for persistence.
-    // For example, if initialData came from a parent that manages API calls:
-    // onUpdateCustomer(updatedDisplayData); // Hypothetical parent update function
-    
+    // To reflect changes in the UI immediately if we were *not* relying on key-based re-render of this component
+    // we might do: setCustomerData(updatedDisplayDataFromForm);
+    // However, page.tsx controls the initialData prop which re-keys this component.
+    // For now, the effect is primarily local until a "save to backend/mock source" is implemented.
+
     setIsEditing(false);
     toast({
-      title: "Customer Details Updated!",
-      description: "The customer information has been updated locally.",
+      title: "Details Updated (Locally)!",
+      description: "Patient information has been updated for this view.",
     });
   }
 
   function handleCancelEdit() {
-    // Reset form to currently displayed data (which is derived from initialData)
     customerDetailsForm.reset({
         name: (customerData.name && customerData.name !== "N/A") ? customerData.name : "",
         phoneNumber: customerData.phoneNumber,
@@ -211,7 +209,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="Customer Name" {...field} className="text-2xl font-bold p-2 h-auto" />
+                        <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -222,7 +220,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
               <div>
                 <CardTitle className="text-2xl font-bold">{customerData.name}</CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">
-                  {customerData.previous_customer ? "Returning Customer" : "New Customer"}
+                  {customerData.previous_customer ? "Returning Patient" : "New Patient"}
                 </CardDescription>
               </div>
             )}
@@ -272,7 +270,7 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                       <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Email Address:</FormLabel>
                       <FormControl>
-                        <Input placeholder="jane.doe@example.com" {...field} />
+                        <Input placeholder="patient@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -328,13 +326,13 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                     <FormItem>
                       <FormLabel className="flex items-center text-md font-semibold text-foreground">
                         <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
-                        Current Problem
+                        Detailed Problem Description
                       </FormLabel>
                       <Alert variant="destructive" className="p-0">
                         <FormControl className="p-0 m-0">
                           <Textarea
-                            data-ai-hint="device issue"
-                            placeholder="Describe the current problem..."
+                            data-ai-hint="medical condition"
+                            placeholder="Describe the current problem or reason for appointment..."
                             {...field}
                             rows={3}
                             className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none"
@@ -356,12 +354,12 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
                     {isTicketSubmitted ? (
                       <>
                         <Check className="mr-2 h-5 w-5" />
-                        Ticket Created!
+                        Submitted! 
                       </>
                     ) : (
                       <>
                         <Ticket className="mr-2 h-5 w-5" />
-                        Create Ticket
+                        Submit Information
                       </>
                     )}
                   </Button>
@@ -374,4 +372,3 @@ export default function CustomerInformationForm({ initialData }: CustomerInforma
     </Form>
   );
 }
-

@@ -4,39 +4,39 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'PT Sans', sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* White */
+    --background: 210 25% 96%; /* Light Grey #F0F4F8 */
     --foreground: 240 10% 3.9%; /* Near Black */
 
-    --muted: 240 4.8% 95.9%; /* Light Gray */
-    --muted-foreground: 240 3.8% 46.1%; /* Mid Gray */
+    --muted: 210 20% 85%; /* Muted grey */
+    --muted-foreground: 240 5% 40%; /* Muted text */
 
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 240 10% 3.9%; /* Near Black */
 
-    --card: 0 0% 100%; /* White */
+    --card: 0 0% 100%; /* White for Card, or can be same as background: 210 25% 96% */
     --card-foreground: 240 10% 3.9%; /* Near Black */
 
-    --border: 240 5.9% 90%; /* Light Gray Border */
-    --input: 0 0% 100%; /* White for inputs (bordered by --border) */
+    --border: 210 15% 88%; /* Border color */
+    --input: 0 0% 100%; /* White for inputs */
 
-    --primary: 240 5.9% 10%; /* Dark Gray / Almost Black */
-    --primary-foreground: 0 0% 98%; /* Almost White */
+    --primary: 207 88% 71%; /* Soft Blue #64B5F6 */
+    --primary-foreground: 240 10% 3.9%; /* Dark text on light blue */
 
-    --secondary: 240 4.8% 95.9%; /* Light Gray */
-    --secondary-foreground: 240 5.9% 10%; /* Dark Gray / Almost Black */
+    --secondary: 210 20% 90%; /* Slightly darker grey for secondary elements */
+    --secondary-foreground: 240 10% 3.9%; /* Dark text on secondary */
 
-    --accent: 217.2 91.2% 59.8%; /* Bright Blue */
-    --accent-foreground: 0 0% 98%; /* Almost White */
+    --accent: 125 43% 64%; /* Muted Green #81C784 */
+    --accent-foreground: 0 0% 98%; /* White/light text on green */
 
     --destructive: 0 84.2% 60.2%; /* Red */
     --destructive-foreground: 0 0% 98%; /* Almost White */
 
-    --ring: 217.2 91.2% 59.8%; /* Bright Blue for focus rings */
+    --ring: 207 88% 65%; /* Ring color related to primary blue */
     --radius: 0.5rem;
     
     /* Chart colors - can be customized further if needed */
@@ -46,46 +46,46 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
-    /* Sidebar colors - Zinc theme */
-    --sidebar-background: 240 4.8% 95.9%; /* Very Light Gray */
-    --sidebar-foreground: 240 10% 3.9%;    /* Near Black */
-    --sidebar-primary: 240 5.9% 10%;       /* Dark Gray / Almost Black */
-    --sidebar-primary-foreground: 0 0% 98%;/* Almost White */
-    --sidebar-accent: 0 0% 100%;           /* White (for hover on light gray sidebar) */
-    --sidebar-accent-foreground: 240 5.9% 10%; /* Dark Gray / Almost Black (text on hover) */
-    --sidebar-border: 240 5.9% 90%;       /* Light Gray Border */
-    --sidebar-ring: 217.2 91.2% 59.8%;     /* Bright Blue for focus rings */
+    /* Sidebar colors - consistent with new theme */
+    --sidebar-background: 210 25% 92%; /* Slightly darker than main bg for contrast */
+    --sidebar-foreground: 240 10% 3.9%;    
+    --sidebar-primary: 207 88% 71%;      
+    --sidebar-primary-foreground: 240 10% 3.9%;
+    --sidebar-accent: 125 43% 64%;          
+    --sidebar-accent-foreground: 0 0% 98%; 
+    --sidebar-border: 210 15% 85%;      
+    --sidebar-ring: 207 88% 65%;     
   }
 
   .dark {
-    --background: 240 10% 3.9%; /* Near Black */
-    --foreground: 0 0% 98%; /* Almost White */
+    --background: 220 13% 10%; 
+    --foreground: 210 20% 90%; 
 
-    --muted: 240 3.7% 15.9%; /* Dark Gray */
-    --muted-foreground: 240 5% 64.9%; /* Lighter Gray for muted text */
+    --muted: 220 10% 25%; 
+    --muted-foreground: 210 15% 60%; 
 
-    --popover: 240 10% 3.9%; /* Near Black */
-    --popover-foreground: 0 0% 98%; /* Almost White */
+    --popover: 220 13% 10%; 
+    --popover-foreground: 210 20% 90%; 
 
-    --card: 240 10% 3.9%; /* Near Black */
-    --card-foreground: 0 0% 98%; /* Almost White */
+    --card: 220 13% 12%; 
+    --card-foreground: 210 20% 90%; 
 
-    --border: 240 3.7% 15.9%; /* Dark Gray Border */
-    --input: 240 3.7% 15.9%; /* Dark Gray for input background */
+    --border: 220 10% 25%; 
+    --input: 220 10% 20%; 
 
-    --primary: 0 0% 98%; /* Almost White */
-    --primary-foreground: 240 5.9% 10%; /* Dark Gray / Almost Black */
+    --primary: 207 80% 65%; 
+    --primary-foreground: 0 0% 98%; 
 
-    --secondary: 240 3.7% 15.9%; /* Dark Gray */
-    --secondary-foreground: 0 0% 98%; /* Almost White */
+    --secondary: 220 10% 20%; 
+    --secondary-foreground: 210 20% 90%; 
 
-    --accent: 217.2 91.2% 59.8%; /* Bright Blue */
-    --accent-foreground: 0 0% 98%; /* Almost White */
+    --accent: 125 40% 58%; 
+    --accent-foreground: 0 0% 98%; 
     
-    --destructive: 0 62.8% 30.6%; /* Darker Red */
-    --destructive-foreground: 0 0% 98%; /* Almost White */
+    --destructive: 0 62.8% 30.6%; 
+    --destructive-foreground: 0 0% 98%; 
 
-    --ring: 217.2 91.2% 59.8%; /* Bright Blue for focus rings */
+    --ring: 207 80% 60%; 
     
     /* Chart colors - can be customized further if needed */
     --chart-1: 220 70% 50%;
@@ -94,15 +94,15 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    /* Sidebar colors - Zinc theme dark */
-    --sidebar-background: 240 5.9% 10%;    /* Dark Gray (slightly lighter than main dark bg) */
-    --sidebar-foreground: 0 0% 98%;        /* Almost White */
-    --sidebar-primary: 0 0% 98%;           /* Almost White */
-    --sidebar-primary-foreground: 240 5.9% 10%;/* Dark Gray / Almost Black */
-    --sidebar-accent: 240 3.7% 15.9%;      /* Slightly Lighter Dark Gray (for hover) */
-    --sidebar-accent-foreground: 0 0% 98%; /* Almost White (text on hover) */
-    --sidebar-border: 240 3.7% 15.9%;       /* Dark Gray Border */
-    --sidebar-ring: 217.2 91.2% 59.8%;     /* Bright Blue for focus rings */
+    /* Sidebar colors - consistent with new theme */
+    --sidebar-background: 220 13% 12%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 207 80% 65%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 125 40% 58%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 10% 25%;
+    --sidebar-ring: 207 80% 60%;
   }
 }
 
