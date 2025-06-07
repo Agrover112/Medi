@@ -350,7 +350,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                             placeholder="Describe the current problem or reason for appointment..."
                             {...field}
                             rows={3}
-                            className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive-foreground placeholder:text-destructive-foreground/70"
+                            className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive dark:text-destructive-foreground placeholder:text-destructive/70 dark:placeholder:text-destructive-foreground/70"
                             disabled={isFormDisabled || isEditing} // Disable if main form is N/A or if details are being edited
                           />
                         </FormControl>
