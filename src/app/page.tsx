@@ -174,7 +174,7 @@ export default function HomePage() {
     <main className="flex min-h-screen flex-col items-start justify-start p-4 md:p-8 bg-background">
       <div className="w-full text-center mb-10 mt-4">
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground">
-          MediForm Excel Generator
+          MediForm
         </h1>
         <p className="text-lg text-muted-foreground mt-2">
           Patient Data Entry & Excel Export

@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'MediForm Excel Generator',
+  title: 'MediForm',
   description: 'Enter patient information and generate an Excel file.',
 };
 
