@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert } from "@/components/ui/alert";
 
@@ -163,34 +163,36 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     <Card className="shadow-2xl rounded-xl">
       <Form {...customerDetailsForm}>
         <CardHeader className="pb-2 pt-6">
-          {/* Intentionally left blank or for a future static title if needed */}
+          {/* Intentionally empty or for a future static title if needed */}
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="flex flex-col items-center mb-6">
-            <div className="flex items-center space-x-4 mb-2">
+           <div className="flex flex-col items-center mb-6">
+            <div className="flex items-center space-x-4">
               <User className="h-10 w-10 text-primary flex-shrink-0" />
-              <FormField
-                control={customerDetailsForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input 
-                        placeholder="Patient Name" 
-                        {...field} 
-                        className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none bg-transparent text-foreground placeholder:text-muted-foreground" 
-                        disabled={isFormDisabled} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex flex-col">
+                <FormField
+                  control={customerDetailsForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input 
+                          placeholder="Patient Name" 
+                          {...field} 
+                          className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none bg-transparent text-foreground placeholder:text-muted-foreground" 
+                          disabled={isFormDisabled} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <p className="text-sm text-muted-foreground">
+                  {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
-            </p>
           </div>
           <Separator className="mb-6" />
 
