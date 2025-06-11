@@ -161,32 +161,39 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
 
   return (
     <Card className="shadow-2xl rounded-xl">
-      <Form {...customerDetailsForm}> {/* Moved FormProvider to wrap CardHeader and CardContent */}
-        <CardHeader className="pb-4">
-          <div className="flex items-center space-x-4 mb-2">
-            <User className="h-10 w-10 text-primary" />
-            <div className="flex-grow">
+      <Form {...customerDetailsForm}>
+        <CardHeader className="pb-2 pt-6">
+          {/* Intentionally left blank or for a future static title if needed */}
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="flex flex-col items-center mb-6">
+            <div className="flex items-center space-x-4 mb-2">
+              <User className="h-10 w-10 text-primary flex-shrink-0" />
               <FormField
                 control={customerDetailsForm.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" disabled={isFormDisabled} />
+                      <Input 
+                        placeholder="Patient Name" 
+                        {...field} 
+                        className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none bg-transparent text-foreground placeholder:text-muted-foreground" 
+                        disabled={isFormDisabled} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+            <p className="text-sm text-muted-foreground">
+              {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
+            </p>
           </div>
-          <CardDescription className="ml-14">
-            {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
-          </CardDescription>
-        </CardHeader>
+          <Separator className="mb-6" />
 
-        <CardContent className="space-y-6">
-          {/* This form tag is for semantic grouping and styling, customerDetailsForm context is from above */}
           <form className="space-y-3"> 
               <FormField
                 control={customerDetailsForm.control}
@@ -245,8 +252,6 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                 )}
               />
           </form>
-          {/* Separator and problemForm are siblings to the customer details <form> within CardContent,
-              and problemForm correctly establishes its own nested FormProvider context. */}
           <Separator />
 
           <Form {...problemForm}>
@@ -300,7 +305,8 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
             </form>
           </Form>
         </CardContent>
-      </Form> {/* End of customerDetailsForm provider */}
+      </Form>
     </Card>
   );
 }
+
