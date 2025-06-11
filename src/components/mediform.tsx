@@ -5,7 +5,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Ticket, Save, Check } from "lucide-react";
+import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Ticket, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -80,8 +80,7 @@ type ProblemFormData = z.infer<typeof problemFormSchema>;
 
 export default function CustomerInformationForm({ initialData, onUpdateCustomerInfo, selectedIndex }: CustomerInformationFormProps) {
   const { toast } = useToast();
-  const [isProblemSubmitting, setIsProblemSubmitting] = React.useState(false); 
-  const [isDetailsSubmitting, setIsDetailsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false); 
 
   const customerData = React.useMemo((): DisplayCustomerData => {
     if (!initialData) return defaultDisplayData;
@@ -125,89 +124,69 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     problemForm.reset({
       currentProblem: customerData.problem || "",
     });
-    setIsProblemSubmitting(false);
-    setIsDetailsSubmitting(false);
+    setIsSubmitting(false);
   }, [customerData, customerDetailsForm, problemForm]);
 
 
-  async function onSubmitProblem(values: ProblemFormData) {
+  async function onSubmitAllData(problemValues: ProblemFormData) {
     if (!initialData) return;
-    setIsProblemSubmitting(true);
+    setIsSubmitting(true);
+
+    const detailValues = customerDetailsForm.getValues();
 
     const updatedApiInfo: ApiCustomerInfo = {
-      ...initialData, 
-      problem: values.currentProblem,
+      name: detailValues.name,
+      address: detailValues.address || null,
+      date_of_birth: detailValues.dob || null,
+      email: detailValues.email || null,
+      phone: detailValues.phoneNumber || null,
+      previous_customer: initialData.previous_customer, 
+      problem: problemValues.currentProblem,
     };
     onUpdateCustomerInfo(updatedApiInfo, selectedIndex);
     
     toast({
-      title: "Problem Updated!",
-      description: `Problem description for ${initialData.name} has been updated in this session.`,
+      title: "Patient Information Updated!",
+      description: `All information for ${detailValues.name} has been updated in this session.`,
       variant: "default"
     });
 
      setTimeout(() => {
-        setIsProblemSubmitting(false); 
+        setIsSubmitting(false); 
      }, 3000); 
   }
-
-  function onSaveCustomerDetails(values: CustomerDetailsFormData) {
-    if (!initialData) return;
-    setIsDetailsSubmitting(true);
-
-    const updatedApiInfo: ApiCustomerInfo = {
-        name: values.name,
-        address: values.address || null,
-        date_of_birth: values.dob || null,
-        email: values.email || null,
-        phone: values.phoneNumber || null,
-        previous_customer: initialData.previous_customer, 
-        problem: initialData.problem, 
-    };
-
-    onUpdateCustomerInfo(updatedApiInfo, selectedIndex);
-    toast({
-      title: "Patient Details Updated!",
-      description: `Information for ${values.name} has been updated in this session.`,
-      variant: "default"
-    });
-     setTimeout(() => {
-        setIsDetailsSubmitting(false); 
-     }, 3000); 
-  }
-
 
   const isFormDisabled = customerData.name === "N/A" || !initialData;
 
 
   return (
-    <Form {...customerDetailsForm}>
-      <Card className="shadow-2xl rounded-xl">
-        <CardHeader className="pb-4">
-          <div className="flex items-center space-x-4 mb-2">
-            <User className="h-10 w-10 text-primary" />
-            <div className="flex-grow">
-              <FormField
-                control={customerDetailsForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" disabled={isFormDisabled} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+    <Card className="shadow-2xl rounded-xl">
+      <CardHeader className="pb-4">
+        <div className="flex items-center space-x-4 mb-2">
+          <User className="h-10 w-10 text-primary" />
+          <div className="flex-grow">
+            <FormField
+              control={customerDetailsForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" disabled={isFormDisabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          <CardDescription className="ml-14"> {/* Aligns with name input start */}
-            {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
-          </CardDescription>
-        </CardHeader>
+        </div>
+        <CardDescription className="ml-14"> {/* Aligns with name input start */}
+          {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
+        </CardDescription>
+      </CardHeader>
 
-        <CardContent className="space-y-6">
-          <form onSubmit={customerDetailsForm.handleSubmit(onSaveCustomerDetails)} className="space-y-3">
+      <CardContent className="space-y-6">
+        <Form {...customerDetailsForm}>
+          <form className="space-y-3"> {/* No onSubmit here, handled by single button */}
               <FormField
                 control={customerDetailsForm.control}
                 name="phoneNumber"
@@ -264,33 +243,14 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                   </FormItem>
                 )}
               />
-              <div className="pt-4">
-                <Button 
-                  type="submit" 
-                  variant="secondary"
-                  className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                  disabled={customerDetailsForm.formState.isSubmitting || isDetailsSubmitting || isFormDisabled}
-                >
-                  {isDetailsSubmitting ? (
-                    <>
-                      <Check className="mr-2 h-5 w-5" />
-                      Details Updated! 
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-5 w-5" />
-                      Update Patient Details
-                    </>
-                  )}
-                </Button>
-              </div>
           </form>
+        </Form>
 
           <Separator />
 
           <div>
             <Form {...problemForm}>
-              <form onSubmit={problemForm.handleSubmit(onSubmitProblem)} className="space-y-4">
+              <form onSubmit={problemForm.handleSubmit(onSubmitAllData)} className="space-y-4">
                 <FormField
                   control={problemForm.control}
                   name="currentProblem"
@@ -322,9 +282,9 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                     type="submit" 
                     variant="default"
                     className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting || isProblemSubmitting || isFormDisabled}
+                    disabled={problemForm.formState.isSubmitting || isSubmitting || isFormDisabled}
                   >
-                    {isProblemSubmitting ? (
+                    {isSubmitting ? (
                       <>
                         <Check className="mr-2 h-5 w-5" />
                         Updated! 
@@ -342,7 +302,6 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
           </div>
         </CardContent>
       </Card>
-    </Form>
   );
 }
 
