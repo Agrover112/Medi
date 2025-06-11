@@ -5,7 +5,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Edit, Ticket, Save, XCircle, Check } from "lucide-react";
+import { User, Phone, Mail, CalendarDays, MapPin, AlertTriangle, Ticket, Save, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -77,27 +77,11 @@ const problemFormSchema = z.object({
 
 type ProblemFormData = z.infer<typeof problemFormSchema>;
 
-interface InfoLineProps {
-  icon: React.ElementType;
-  label: string;
-  value: string | null | undefined;
-  className?: string;
-}
-
-const InfoLine: React.FC<InfoLineProps> = ({ icon: Icon, label, value, className }) => (
-  <div className={`flex items-start space-x-3 py-2 ${className}`}>
-    <Icon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
-    <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-2 w-full">
-      <span className="text-sm font-medium text-muted-foreground min-w-[120px]">{label}:</span>
-      <span className="text-sm text-foreground break-words">{value || "N/A"}</span>
-    </div>
-  </div>
-);
 
 export default function CustomerInformationForm({ initialData, onUpdateCustomerInfo, selectedIndex }: CustomerInformationFormProps) {
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = React.useState(false);
   const [isProblemSubmitting, setIsProblemSubmitting] = React.useState(false); 
+  const [isDetailsSubmitting, setIsDetailsSubmitting] = React.useState(false);
 
   const customerData = React.useMemo((): DisplayCustomerData => {
     if (!initialData) return defaultDisplayData;
@@ -141,8 +125,8 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     problemForm.reset({
       currentProblem: customerData.problem || "",
     });
-    setIsEditing(false); 
     setIsProblemSubmitting(false);
+    setIsDetailsSubmitting(false);
   }, [customerData, customerDetailsForm, problemForm]);
 
 
@@ -169,6 +153,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
 
   function onSaveCustomerDetails(values: CustomerDetailsFormData) {
     if (!initialData) return;
+    setIsDetailsSubmitting(true);
 
     const updatedApiInfo: ApiCustomerInfo = {
         name: values.name,
@@ -181,24 +166,16 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     };
 
     onUpdateCustomerInfo(updatedApiInfo, selectedIndex);
-    setIsEditing(false);
     toast({
       title: "Patient Details Updated!",
       description: `Information for ${values.name} has been updated in this session.`,
       variant: "default"
     });
+     setTimeout(() => {
+        setIsDetailsSubmitting(false); 
+     }, 3000); 
   }
 
-  function handleCancelEdit() {
-    customerDetailsForm.reset({
-        name: (customerData.name && customerData.name !== "N/A") ? customerData.name : "",
-        phoneNumber: customerData.phoneNumber,
-        email: customerData.email,
-        dob: (customerData.dob && customerData.dob !== "N/A") ? customerData.dob : "",
-        address: customerData.address,
-    });
-    setIsEditing(false);
-  }
 
   const isFormDisabled = customerData.name === "N/A" || !initialData;
 
@@ -206,121 +183,108 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
   return (
     <Form {...customerDetailsForm}>
       <Card className="shadow-2xl rounded-xl">
-        <CardHeader className="flex flex-col sm:flex-row items-start justify-between space-y-2 sm:space-y-0 pb-4">
-          <div className="flex items-center space-x-4">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-4 mb-2">
             <User className="h-10 w-10 text-primary" />
-            {isEditing ? (
-              <div className="space-y-2">
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            ) : (
-              <div>
-                <CardTitle className="text-2xl font-bold">{customerData.name}</CardTitle>
-                <CardDescription>
-                  {customerData.previous_customer ? "Returning Patient" : "New Patient"}
-                </CardDescription>
-              </div>
-            )}
+            <div className="flex-grow">
+              <FormField
+                control={customerDetailsForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" disabled={isFormDisabled} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            {isEditing ? (
-              <>
-                <Button variant="default" size="sm" onClick={customerDetailsForm.handleSubmit(onSaveCustomerDetails)}>
-                  <Save className="mr-2 h-4 w-4" /> Save
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
-                  <XCircle className="mr-2 h-4 w-4" /> Cancel
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="default" size="sm" onClick={() => setIsEditing(true)} disabled={isFormDisabled}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit
-                </Button>
-              </>
-            )}
-          </div>
+          <CardDescription className="ml-14"> {/* Aligns with name input start */}
+            {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {isEditing ? (
-            <div className="space-y-3">
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-3">
-                      <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Phone Number:</FormLabel>
-                      <FormControl>
-                        <Input placeholder="123-456-7890" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+          <form onSubmit={customerDetailsForm.handleSubmit(onSaveCustomerDetails)} className="space-y-3">
+              <FormField
+                control={customerDetailsForm.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-3">
+                    <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Phone Number:</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123-456-7890" {...field} disabled={isFormDisabled} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={customerDetailsForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-3">
+                    <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Email Address:</FormLabel>
+                    <FormControl>
+                      <Input placeholder="patient@example.com" {...field} disabled={isFormDisabled}/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={customerDetailsForm.control}
+                name="dob"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-3">
+                    <CalendarDays className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Date of Birth:</FormLabel>
+                    <FormControl>
+                      <Input placeholder="YYYY-MM-DD" {...field} disabled={isFormDisabled}/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={customerDetailsForm.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem className="flex items-start space-x-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                    <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Address:</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="123 Main St, Anytown, USA 12345" {...field} rows={2} className="resize-none" disabled={isFormDisabled}/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="pt-4">
+                <Button 
+                  type="submit" 
+                  variant="secondary"
+                  className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                  disabled={customerDetailsForm.formState.isSubmitting || isDetailsSubmitting || isFormDisabled}
+                >
+                  {isDetailsSubmitting ? (
+                    <>
+                      <Check className="mr-2 h-5 w-5" />
+                      Details Updated! 
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-5 w-5" />
+                      Update Patient Details
+                    </>
                   )}
-                />
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-3">
-                      <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Email Address:</FormLabel>
-                      <FormControl>
-                        <Input placeholder="patient@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="dob"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-3">
-                      <CalendarDays className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Date of Birth:</FormLabel>
-                      <FormControl>
-                        <Input placeholder="YYYY-MM-DD" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={customerDetailsForm.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem className="flex items-start space-x-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
-                      <FormLabel className="text-sm font-medium text-muted-foreground min-w-[120px] pt-2">Address:</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="123 Main St, Anytown, USA 12345" {...field} rows={2} className="resize-none" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <InfoLine icon={Phone} label="Phone Number" value={customerData.phoneNumber} />
-              <InfoLine icon={Mail} label="Email Address" value={customerData.email} />
-              <InfoLine icon={CalendarDays} label="Date of Birth" value={customerData.dob} />
-              <InfoLine icon={MapPin} label="Address" value={customerData.address} />
-            </div>
-          )}
+                </Button>
+              </div>
+          </form>
 
           <Separator />
 
@@ -344,7 +308,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                             {...field}
                             rows={3}
                             className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive dark:text-destructive-foreground placeholder:text-destructive/70 dark:placeholder:text-destructive-foreground/70"
-                            disabled={isFormDisabled || isEditing} 
+                            disabled={isFormDisabled} 
                           />
                         </FormControl>
                       </Alert>
@@ -358,7 +322,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                     type="submit" 
                     variant="default"
                     className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting || isProblemSubmitting || isFormDisabled || isEditing}
+                    disabled={problemForm.formState.isSubmitting || isProblemSubmitting || isFormDisabled}
                   >
                     {isProblemSubmitting ? (
                       <>
@@ -381,3 +345,4 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
     </Form>
   );
 }
+
