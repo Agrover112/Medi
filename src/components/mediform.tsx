@@ -161,32 +161,33 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
 
   return (
     <Card className="shadow-2xl rounded-xl">
-      <CardHeader className="pb-4">
-        <div className="flex items-center space-x-4 mb-2">
-          <User className="h-10 w-10 text-primary" />
-          <div className="flex-grow">
-            <FormField
-              control={customerDetailsForm.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" disabled={isFormDisabled} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      <Form {...customerDetailsForm}> {/* Moved FormProvider to wrap CardHeader and CardContent */}
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-4 mb-2">
+            <User className="h-10 w-10 text-primary" />
+            <div className="flex-grow">
+              <FormField
+                control={customerDetailsForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="Patient Name" {...field} className="text-2xl font-bold p-2 h-auto border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none" disabled={isFormDisabled} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-        </div>
-        <CardDescription className="ml-14"> {/* Aligns with name input start */}
-          {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
-        </CardDescription>
-      </CardHeader>
+          <CardDescription className="ml-14">
+            {initialData && (initialData.previous_customer ? "Returning Patient" : "New Patient")}
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="space-y-6">
-        <Form {...customerDetailsForm}>
-          <form className="space-y-3"> {/* No onSubmit here, handled by single button */}
+        <CardContent className="space-y-6">
+          {/* This form tag is for semantic grouping and styling, customerDetailsForm context is from above */}
+          <form className="space-y-3"> 
               <FormField
                 control={customerDetailsForm.control}
                 name="phoneNumber"
@@ -244,64 +245,62 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                 )}
               />
           </form>
-        </Form>
-
+          {/* Separator and problemForm are siblings to the customer details <form> within CardContent,
+              and problemForm correctly establishes its own nested FormProvider context. */}
           <Separator />
 
-          <div>
-            <Form {...problemForm}>
-              <form onSubmit={problemForm.handleSubmit(onSubmitAllData)} className="space-y-4">
-                <FormField
-                  control={problemForm.control}
-                  name="currentProblem"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center text-md font-semibold">
-                        <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
-                        Detailed Problem Description
-                      </FormLabel>
-                      <Alert variant="destructive" className="p-0 bg-destructive/5 border-destructive/50">
-                        <FormControl className="p-0 m-0">
-                          <Textarea
-                            data-ai-hint="medical condition"
-                            placeholder="Describe the current problem or reason for appointment..."
-                            {...field}
-                            rows={3}
-                            className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive dark:text-destructive-foreground placeholder:text-destructive/70 dark:placeholder:text-destructive-foreground/70"
-                            disabled={isFormDisabled} 
-                          />
-                        </FormControl>
-                      </Alert>
-                      <FormMessage />
-                    </FormItem>
+          <Form {...problemForm}>
+            <form onSubmit={problemForm.handleSubmit(onSubmitAllData)} className="space-y-4">
+              <FormField
+                control={problemForm.control}
+                name="currentProblem"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center text-md font-semibold">
+                      <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
+                      Detailed Problem Description
+                    </FormLabel>
+                    <Alert variant="destructive" className="p-0 bg-destructive/5 border-destructive/50">
+                      <FormControl className="p-0 m-0">
+                        <Textarea
+                          data-ai-hint="medical condition"
+                          placeholder="Describe the current problem or reason for appointment..."
+                          {...field}
+                          rows={3}
+                          className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none text-destructive dark:text-destructive-foreground placeholder:text-destructive/70 dark:placeholder:text-destructive-foreground/70"
+                          disabled={isFormDisabled} 
+                        />
+                      </FormControl>
+                    </Alert>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="pt-4">
+                <Button 
+                  type="submit" 
+                  variant="default"
+                  className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                  disabled={problemForm.formState.isSubmitting || isSubmitting || isFormDisabled}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Check className="mr-2 h-5 w-5" />
+                      Updated! 
+                    </>
+                  ) : (
+                    <>
+                      <Ticket className="mr-2 h-5 w-5" />
+                      Update Problem Description
+                    </>
                   )}
-                />
-                
-                <div className="pt-4">
-                  <Button 
-                    type="submit" 
-                    variant="default"
-                    className="w-full text-lg py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                    disabled={problemForm.formState.isSubmitting || isSubmitting || isFormDisabled}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Check className="mr-2 h-5 w-5" />
-                        Updated! 
-                      </>
-                    ) : (
-                      <>
-                        <Ticket className="mr-2 h-5 w-5" />
-                        Update Problem Description
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </div>
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
-      </Card>
+      </Form> {/* End of customerDetailsForm provider */}
+    </Card>
   );
 }
-
