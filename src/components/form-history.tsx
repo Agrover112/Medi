@@ -2,13 +2,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { History, UserCircle, Search, Download } from 'lucide-react';
+import { History, UserCircle, Search, Download, PanelLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import type { ApiCustomerInfo } from '@/components/mediform';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar'; // Added SidebarTrigger
+import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar';
 import {
   SidebarHeader,
   SidebarContent,
@@ -16,7 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SheetTitle, // Keep if still used by Sidebar component internals for mobile
+  // SheetTitle, // No longer needed here as title is in Sidebar component
 } from '@/components/ui/sidebar';
 import * as XLSX from 'xlsx';
 import type { useToast } from "@/hooks/use-toast";
@@ -38,7 +38,7 @@ interface FormHistoryProps {
 
 export default function FormHistory({ historyItems, onSelectHistoryItem, currentIndex, toast }: FormHistoryProps) {
   const [filterTerm, setFilterTerm] = useState('');
-  const { state: sidebarState } = useSidebar(); 
+  const { state: sidebarState, isMobile } = useSidebar(); 
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilterTerm(event.target.value);
@@ -87,7 +87,13 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
             <History className="mr-2 h-5 w-5 text-primary group-data-[collapsible=icon]:mr-0" />
             <span className="group-data-[collapsible=icon]:hidden">Form History</span>
           </div>
-          <SidebarTrigger variant="ghost" size="icon" className="h-7 w-7" />
+          {/* Desktop: Trigger to CLOSE sidebar, appears inside sidebar when expanded */}
+          {!isMobile && sidebarState === "expanded" && (
+             <SidebarTrigger variant="ghost" size="icon" className="h-7 w-7">
+                <PanelLeft className="h-5 w-5"/>
+                <span className="sr-only">Close Sidebar</span>
+            </SidebarTrigger>
+          )}
         </div>
         <div className={cn("relative mt-3", sidebarState === 'collapsed' && 'hidden')}>
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -151,7 +157,7 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
           </SidebarMenu>
         )}
       </SidebarContent>
-      <SidebarFooter className={cn("p-3 border-t border-sidebar-border", sidebarState === 'collapsed' && 'hidden')}>
+      <SidebarFooter className={cn("p-3 border-t border-sidebar-border", (sidebarState === 'collapsed' && !isMobile) && 'hidden')}>
         <Button variant="outline" onClick={handleDownloadCsv} className="w-full">
           <Download className="mr-2 h-4 w-4" />
           Download CSV
@@ -160,3 +166,4 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
     </div>
   );
 }
+

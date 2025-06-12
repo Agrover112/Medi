@@ -4,12 +4,11 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle } from "lucide-react";
-import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar";
+import { Loader2, AlertTriangle, Download, PanelRightOpen, PanelLeft } from "lucide-react";
+import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 
 
 interface ApiDataItem {
@@ -92,12 +91,14 @@ const mockCustomerApiData: ApiDataItem[] = [
   }
 ];
 
-export default function HomePage() {
+function PageContent() {
   const [allCustomerApiData, setAllCustomerApiData] = useState<ApiDataItem[]>([]);
   const [selectedCustomerIndex, setSelectedCustomerIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { state, isMobile } = useSidebar();
+
 
   useEffect(() => {
     setIsLoading(true);
@@ -174,8 +175,8 @@ export default function HomePage() {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <Sidebar collapsible="icon" className="bg-sidebar text-sidebar-foreground">
+    <>
+      <Sidebar collapsible="offcanvas" className="bg-sidebar text-sidebar-foreground">
         <FormHistory
           historyItems={allCustomerApiData}
           onSelectHistoryItem={handleSelectHistoryItem}
@@ -184,11 +185,24 @@ export default function HomePage() {
         />
       </Sidebar>
       <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
-          <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}> 
-            <div className="md:hidden">
-              {/* SidebarTrigger removed from here */}
-            </div>
+         <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
+          <div className="flex items-center gap-2" style={{ minWidth: '2.5rem' }}>
+            {/* Desktop: Trigger to OPEN sidebar, appears when sidebar is collapsed */}
+            {!isMobile && state === "collapsed" && (
+              <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
+                <PanelRightOpen className="h-5 w-5" />
+                <span className="sr-only">Open Sidebar</span>
+              </SidebarTrigger>
+            )}
+            {/* Mobile: Trigger to toggle sidebarSheet, always visible on mobile in this slot */}
+            {isMobile && (
+              <div className="md:hidden">
+                 <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
+                    <PanelLeft className="h-5 w-5" />
+                    <span className="sr-only">Toggle Menu</span>
+                </SidebarTrigger>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-1 flex-col items-center text-center">
@@ -201,7 +215,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}>
-            {/* Placeholder for balance */}
+            {/* Placeholder for balance or future buttons */}
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
@@ -213,6 +227,15 @@ export default function HomePage() {
             />
         </main>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
+}
+
+export default function HomePage() {
+  // Set defaultOpen to false if you want to test the "open" trigger first
+  return (
+    <SidebarProvider defaultOpen={true}> 
+      <PageContent />
+    </SidebarProvider>
+  )
 }
