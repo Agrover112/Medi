@@ -185,7 +185,7 @@ function PageContent() {
         />
       </Sidebar>
       <SidebarInset className="bg-background">
-         <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
+         <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 md:gap-x-4">
           <div className="flex items-center gap-2" style={{ minWidth: '2.5rem' }}>
             <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
               {isMobile ? (
@@ -228,12 +228,10 @@ function PageContent() {
 }
 
 export default function HomePage() {
-  // Set defaultOpen to false if you want to test the "open" trigger first
-  // When using offcanvas, it's often better to start closed on desktop.
-  const [defaultOpen, setDefaultOpen] = React.useState(true);
+  const [defaultOpen, setDefaultOpen] = React.useState(true); 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      setDefaultOpen(window.innerWidth >= 768); // Example: open by default on larger screens
+      setDefaultOpen(window.innerWidth >= 768); 
     }
   }, []);
 
@@ -244,4 +242,3 @@ export default function HomePage() {
     </SidebarProvider>
   )
 }
-

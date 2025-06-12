@@ -171,7 +171,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
 
 
   return (
-    <Card className="shadow-2xl rounded-xl">
+    <Card className="shadow-2xl rounded-xl w-full max-w-3xl mx-auto">
       <Form {...customerDetailsForm}>
         <CardHeader className="pb-2 pt-6">
           {/* Intentionally empty or for a future static title if needed */}
@@ -207,7 +207,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
           </div>
           <Separator className="mb-6" />
 
-          <form className="space-y-3"> {/* This form tag is not strictly necessary for RHF submission if Form provider is at top level */}
+          <form className="space-y-3"> 
             <FormField
               control={customerDetailsForm.control}
               name="phoneNumber"
@@ -275,7 +275,7 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center text-md font-semibold">
-                      <AlertTriangle className="h-5 w-5 mr-2 text-muted-foreground" /> {/* Icon color changed */}
+                      <AlertTriangle className="h-5 w-5 mr-2 text-muted-foreground" />
                       Detailed Problem Description
                     </FormLabel>
                     <FormControl>
@@ -283,8 +283,8 @@ export default function CustomerInformationForm({ initialData, onUpdateCustomerI
                         data-ai-hint="medical condition"
                         placeholder="Describe the current problem or reason for appointment..."
                         {...field}
-                        rows={4} // Increased rows slightly for better visibility
-                        className="resize-none" // Removed specific destructive styling, relies on default Textarea style
+                        rows={4} 
+                        className="resize-none"
                         disabled={isFormDisabled}
                       />
                     </FormControl>
