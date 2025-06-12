@@ -4,10 +4,13 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle, PanelLeft } from "lucide-react";
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+
 
 interface ApiDataItem {
   data: {
@@ -131,6 +134,7 @@ export default function HomePage() {
     });
   };
 
+
   const selectedCustomerInfo =
     allCustomerApiData && allCustomerApiData.length > selectedCustomerIndex
       ? allCustomerApiData[selectedCustomerIndex].data.customer_info
@@ -183,12 +187,7 @@ export default function HomePage() {
         <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
           <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}> 
             <div className="md:hidden">
-              <SidebarTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <PanelLeft />
-                  <span className="sr-only">Toggle Menu</span>
-                </Button>
-              </SidebarTrigger>
+              {/* SidebarTrigger removed from here */}
             </div>
           </div>
 
@@ -202,7 +201,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}>
-            {/* Placeholder for balance, content removed */}
+            {/* Placeholder for balance */}
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">

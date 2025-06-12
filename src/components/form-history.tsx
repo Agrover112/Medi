@@ -8,7 +8,7 @@ import type { ApiCustomerInfo } from '@/components/mediform';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useSidebar } from '@/components/ui/sidebar';
+import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar'; // Added SidebarTrigger
 import {
   SidebarHeader,
   SidebarContent,
@@ -16,6 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SheetTitle, // Keep if still used by Sidebar component internals for mobile
 } from '@/components/ui/sidebar';
 import * as XLSX from 'xlsx';
 import type { useToast } from "@/hooks/use-toast";
@@ -81,9 +82,12 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
   return (
     <div className="flex h-full flex-col">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:justify-center">
-          <History className="mr-2 h-5 w-5 text-primary group-data-[collapsible=icon]:mr-0" />
-          <span className="group-data-[collapsible=icon]:hidden">Form History</span>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:flex-1">
+            <History className="mr-2 h-5 w-5 text-primary group-data-[collapsible=icon]:mr-0" />
+            <span className="group-data-[collapsible=icon]:hidden">Form History</span>
+          </div>
+          <SidebarTrigger variant="ghost" size="icon" className="h-7 w-7" />
         </div>
         <div className={cn("relative mt-3", sidebarState === 'collapsed' && 'hidden')}>
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
