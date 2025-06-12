@@ -2,13 +2,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { History, UserCircle, Search, Download, PanelLeft } from 'lucide-react';
+import { History, UserCircle, Search, Download } from 'lucide-react'; // Removed PanelLeft
 import { format } from 'date-fns';
 import type { ApiCustomerInfo } from '@/components/mediform';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar';
+import { useSidebar } from '@/components/ui/sidebar'; // Removed SidebarTrigger
 import {
   SidebarHeader,
   SidebarContent,
@@ -16,7 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  // SheetTitle, // No longer needed here as title is in Sidebar component
 } from '@/components/ui/sidebar';
 import * as XLSX from 'xlsx';
 import type { useToast } from "@/hooks/use-toast";
@@ -87,15 +86,9 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
             <History className="mr-2 h-5 w-5 text-primary group-data-[collapsible=icon]:mr-0" />
             <span className="group-data-[collapsible=icon]:hidden">Form History</span>
           </div>
-          {/* Desktop: Trigger to CLOSE sidebar, appears inside sidebar when expanded */}
-          {!isMobile && sidebarState === "expanded" && (
-             <SidebarTrigger variant="ghost" size="icon" className="h-7 w-7">
-                <PanelLeft className="h-5 w-5"/>
-                <span className="sr-only">Close Sidebar</span>
-            </SidebarTrigger>
-          )}
+          {/* SidebarTrigger removed from here */}
         </div>
-        <div className={cn("relative mt-3", sidebarState === 'collapsed' && 'hidden')}>
+        <div className={cn("relative mt-3", sidebarState === 'collapsed' && !isMobile && 'hidden')}>
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -108,7 +101,7 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
       </SidebarHeader>
       <SidebarContent className="flex-1 overflow-y-auto p-2">
         {(!filteredHistoryItems || filteredHistoryItems.length === 0) ? (
-          <div className={cn("p-2 text-sm text-sidebar-foreground/70", sidebarState === 'collapsed' && 'hidden')}>
+          <div className={cn("p-2 text-sm text-sidebar-foreground/70", sidebarState === 'collapsed' && !isMobile && 'hidden')}>
             {filterTerm ? 'No matching entries found.' : 'No past entries available.'}
           </div>
         ) : (

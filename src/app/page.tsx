@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle, Download, PanelRightOpen, PanelLeft } from "lucide-react";
+import { Loader2, AlertTriangle, Download, PanelRightOpen, PanelLeft, X } from "lucide-react";
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
@@ -187,22 +187,18 @@ function PageContent() {
       <SidebarInset className="bg-background">
          <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
           <div className="flex items-center gap-2" style={{ minWidth: '2.5rem' }}>
-            {/* Desktop: Trigger to OPEN sidebar, appears when sidebar is collapsed */}
-            {!isMobile && state === "collapsed" && (
-              <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
+            <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
+              {isMobile ? (
+                <PanelLeft className="h-5 w-5" />
+              ) : state === 'expanded' ? (
+                <X className="h-5 w-5" />
+              ) : (
                 <PanelRightOpen className="h-5 w-5" />
-                <span className="sr-only">Open Sidebar</span>
-              </SidebarTrigger>
-            )}
-            {/* Mobile: Trigger to toggle sidebarSheet, always visible on mobile in this slot */}
-            {isMobile && (
-              <div className="md:hidden">
-                 <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
-                    <PanelLeft className="h-5 w-5" />
-                    <span className="sr-only">Toggle Menu</span>
-                </SidebarTrigger>
-              </div>
-            )}
+              )}
+              <span className="sr-only">
+                {isMobile ? 'Toggle Menu' : state === 'expanded' ? 'Close Sidebar' : 'Open Sidebar'}
+              </span>
+            </SidebarTrigger>
           </div>
 
           <div className="flex flex-1 flex-col items-center text-center">
@@ -233,9 +229,19 @@ function PageContent() {
 
 export default function HomePage() {
   // Set defaultOpen to false if you want to test the "open" trigger first
+  // When using offcanvas, it's often better to start closed on desktop.
+  const [defaultOpen, setDefaultOpen] = React.useState(true);
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDefaultOpen(window.innerWidth >= 768); // Example: open by default on larger screens
+    }
+  }, []);
+
+
   return (
-    <SidebarProvider defaultOpen={true}> 
+    <SidebarProvider defaultOpen={defaultOpen}> 
       <PageContent />
     </SidebarProvider>
   )
 }
+
