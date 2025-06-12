@@ -2,19 +2,24 @@
 "use client";
 
 import React, { useState } from 'react';
-import { History, UserCircle, Search } from 'lucide-react';
+import { History, UserCircle, Search, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import type { ApiCustomerInfo } from '@/components/mediform';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useSidebar } from '@/components/ui/sidebar'; // Import useSidebar
+import { useSidebar } from '@/components/ui/sidebar';
 import {
   SidebarHeader,
   SidebarContent,
+  SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
+import * as XLSX from 'xlsx';
+import type { useToast } from "@/hooks/use-toast";
+
 
 interface ApiDataItem {
   data: {
@@ -27,11 +32,12 @@ interface FormHistoryProps {
   historyItems: ApiDataItem[];
   onSelectHistoryItem: (index: number) => void;
   currentIndex: number;
+  toast: ReturnType<typeof useToast>['toast'];
 }
 
-export default function FormHistory({ historyItems, onSelectHistoryItem, currentIndex }: FormHistoryProps) {
+export default function FormHistory({ historyItems, onSelectHistoryItem, currentIndex, toast }: FormHistoryProps) {
   const [filterTerm, setFilterTerm] = useState('');
-  const { state: sidebarState } = useSidebar(); // Get sidebar state
+  const { state: sidebarState } = useSidebar(); 
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilterTerm(event.target.value);
@@ -44,13 +50,32 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
     return nameMatch || problemMatch;
   });
 
-  // Find the original index of the selected item in the unfiltered list
-  // This is important if filtering changes the displayed list but selection should persist on original data
-  let actualCurrentIndex = -1;
-  if (filteredHistoryItems.length > 0 && currentIndex < historyItems.length) {
-     const currentSelectedItemOriginal = historyItems[currentIndex];
-     actualCurrentIndex = filteredHistoryItems.findIndex(item => item.timestamp === currentSelectedItemOriginal.timestamp && item.data.customer_info.name === currentSelectedItemOriginal.data.customer_info.name);
-  }
+  const handleDownloadCsv = () => {
+    if (!historyItems || historyItems.length === 0) {
+      toast({
+        title: "No Data",
+        description: "There is no patient data to export.",
+        variant: "default",
+      });
+      return;
+    }
+
+    const csvData = historyItems.map(item => ({
+      "Timestamp": item.timestamp,
+      "Name": item.data.customer_info.name,
+      "Address": item.data.customer_info.address || "",
+      "Date of Birth": item.data.customer_info.date_of_birth || "",
+      "Email": item.data.customer_info.email || "",
+      "Phone": item.data.customer_info.phone || "",
+      "Previous Customer": item.data.customer_info.previous_customer ? "Yes" : "No",
+      "Problem": item.data.customer_info.problem || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(csvData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "PatientData");
+    XLSX.writeFile(workbook, "mediform_patient_data.csv");
+  };
 
 
   return (
@@ -79,7 +104,6 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
         ) : (
           <SidebarMenu>
             {filteredHistoryItems.map((item) => {
-              // Find the original index of this item in the unfiltered historyItems array
               const originalIndex = historyItems.findIndex(
                 originalItem => originalItem.timestamp === item.timestamp && originalItem.data.customer_info.name === item.data.customer_info.name
               );
@@ -87,7 +111,7 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
                 <SidebarMenuItem key={item.timestamp + '-' + originalIndex}>
                   <SidebarMenuButton
                     onClick={() => onSelectHistoryItem(originalIndex)}
-                    isActive={originalIndex === currentIndex} // Compare with original currentIndex
+                    isActive={originalIndex === currentIndex} 
                     className="w-full justify-start text-left h-auto py-2.5 px-3 group-data-[collapsible=icon]:justify-center"
                     tooltip={{
                       content: (
@@ -123,7 +147,12 @@ export default function FormHistory({ historyItems, onSelectHistoryItem, current
           </SidebarMenu>
         )}
       </SidebarContent>
+      <SidebarFooter className={cn("p-3 border-t border-sidebar-border", sidebarState === 'collapsed' && 'hidden')}>
+        <Button variant="outline" onClick={handleDownloadCsv} className="w-full">
+          <Download className="mr-2 h-4 w-4" />
+          Download CSV
+        </Button>
+      </SidebarFooter>
     </div>
   );
 }
-

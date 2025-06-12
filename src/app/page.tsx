@@ -4,11 +4,10 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle, PanelLeft, Download } from "lucide-react";
+import { Loader2, AlertTriangle, PanelLeft } from "lucide-react";
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import * as XLSX from 'xlsx';
 
 interface ApiDataItem {
   data: {
@@ -132,33 +131,6 @@ export default function HomePage() {
     });
   };
 
-  const handleDownloadCsv = () => {
-    if (!allCustomerApiData || allCustomerApiData.length === 0) {
-      toast({
-        title: "No Data",
-        description: "There is no patient data to export.",
-        variant: "default",
-      });
-      return;
-    }
-
-    const csvData = allCustomerApiData.map(item => ({
-      "Timestamp": item.timestamp,
-      "Name": item.data.customer_info.name,
-      "Address": item.data.customer_info.address || "",
-      "Date of Birth": item.data.customer_info.date_of_birth || "",
-      "Email": item.data.customer_info.email || "",
-      "Phone": item.data.customer_info.phone || "",
-      "Previous Customer": item.data.customer_info.previous_customer ? "Yes" : "No",
-      "Problem": item.data.customer_info.problem || ""
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(csvData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "PatientData");
-    XLSX.writeFile(workbook, "mediform_patient_data.csv");
-  };
-
   const selectedCustomerInfo =
     allCustomerApiData && allCustomerApiData.length > selectedCustomerIndex
       ? allCustomerApiData[selectedCustomerIndex].data.customer_info
@@ -204,12 +176,12 @@ export default function HomePage() {
           historyItems={allCustomerApiData}
           onSelectHistoryItem={handleSelectHistoryItem}
           currentIndex={selectedCustomerIndex}
+          toast={toast}
         />
       </Sidebar>
       <SidebarInset className="bg-background">
         <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
-          {/* Left Element (Mobile Trigger or fixed space on desktop) */}
-          <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}> {/* Corresponds to w-10 for an icon button */}
+          <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}> 
             <div className="md:hidden">
               <SidebarTrigger asChild>
                 <Button size="icon" variant="outline">
@@ -220,7 +192,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Center Title Block */}
           <div className="flex flex-1 flex-col items-center text-center">
             <h1 className="text-2xl md:text-3xl font-headline font-bold text-foreground">
               MediForm
@@ -230,12 +201,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Right Download Button */}
-          <div className="flex-shrink-0">
-            <Button variant="outline" onClick={handleDownloadCsv}>
-              <Download className="h-4 w-4" />
-              <span className="ml-2">Download CSV</span>
-            </Button>
+          <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}>
+            {/* Placeholder for balance, content removed */}
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
@@ -250,4 +217,3 @@ export default function HomePage() {
     </SidebarProvider>
   );
 }
-
