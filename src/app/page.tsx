@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle, Download, PanelRightOpen, PanelLeft, X } from "lucide-react";
+import { Loader2, AlertTriangle, Download, PanelLeft, X, SidebarOpen } from "lucide-react";
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
@@ -193,7 +193,7 @@ function PageContent() {
               ) : state === 'expanded' ? (
                 <X className="h-5 w-5" />
               ) : (
-                <PanelRightOpen className="h-5 w-5" />
+                <SidebarOpen className="h-5 w-5" />
               )}
               <span className="sr-only">
                 {isMobile ? 'Toggle Menu' : state === 'expanded' ? 'Close Sidebar' : 'Open Sidebar'}
