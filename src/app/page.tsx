@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle, Download, PanelLeft, X, SidebarOpen } from "lucide-react";
+import { Loader2, AlertTriangle, Download, PanelLeft, SidebarOpen } from "lucide-react";
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
@@ -187,18 +187,18 @@ function PageContent() {
       <SidebarInset className="bg-background">
          <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 md:gap-x-4">
           <div className="flex items-center gap-2" style={{ minWidth: '2.5rem' }}>
-            {(isMobile || (!isMobile && state === 'collapsed')) && (
-              <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
-                {isMobile ? (
-                  <PanelLeft className="h-5 w-5" />
-                ) : (
-                  <SidebarOpen className="h-5 w-5" />
-                )}
-                <span className="sr-only">
-                  {isMobile ? 'Toggle Menu' : 'Open Sidebar'}
-                </span>
-              </SidebarTrigger>
-            )}
+            <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
+              {isMobile ? (
+                <PanelLeft className="h-5 w-5" />
+              ) : state === 'collapsed' ? (
+                <SidebarOpen className="h-5 w-5" />
+              ) : (
+                <PanelLeft className="h-5 w-5" /> 
+              )}
+              <span className="sr-only">
+                {isMobile ? 'Toggle Menu' : state === 'collapsed' ? 'Open Sidebar' : 'Close Sidebar'}
+              </span>
+            </SidebarTrigger>
           </div>
 
           <div className="flex flex-1 flex-col items-center text-center">
@@ -242,4 +242,3 @@ export default function HomePage() {
     </SidebarProvider>
   )
 }
-
