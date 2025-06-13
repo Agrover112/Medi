@@ -4,12 +4,10 @@
 import React, { useState, useEffect } from "react";
 import CustomerInformationForm, { type ApiCustomerInfo } from '@/components/mediform';
 import FormHistory from '@/components/form-history';
-import { Loader2, AlertTriangle, Download, PanelLeft, X } from "lucide-react"; // Removed SidebarOpen
-import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { useToast } from "@/hooks/use-toast";
-import * as XLSX from 'xlsx';
+import { Loader2, AlertTriangle, PanelLeft } from "lucide-react";
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarHeader as PageHeader, SidebarContent as PageContent } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-
+import { useToast } from "@/hooks/use-toast";
 
 interface ApiDataItem {
   data: {
@@ -91,14 +89,12 @@ const mockCustomerApiData: ApiDataItem[] = [
   }
 ];
 
-function PageContent() {
+export default function HomePage() {
   const [allCustomerApiData, setAllCustomerApiData] = useState<ApiDataItem[]>([]);
   const [selectedCustomerIndex, setSelectedCustomerIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { state, isMobile } = useSidebar();
-
 
   useEffect(() => {
     setIsLoading(true);
@@ -134,7 +130,6 @@ function PageContent() {
       return newData;
     });
   };
-
 
   const selectedCustomerInfo =
     allCustomerApiData && allCustomerApiData.length > selectedCustomerIndex
@@ -175,8 +170,8 @@ function PageContent() {
   }
 
   return (
-    <>
-      <Sidebar collapsible="none" className="bg-sidebar text-sidebar-foreground">
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar collapsible="icon" className="bg-sidebar text-sidebar-foreground">
         <FormHistory
           historyItems={allCustomerApiData}
           onSelectHistoryItem={handleSelectHistoryItem}
@@ -185,14 +180,16 @@ function PageContent() {
         />
       </Sidebar>
       <SidebarInset className="bg-background">
-         <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 md:gap-x-4">
-          <div className="flex items-center gap-2" style={{ minWidth: '2.5rem' }}>
-            {isMobile && (
-              <SidebarTrigger variant="ghost" size="icon" className="h-8 w-8">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
+        <header className="sticky top-0 z-10 flex h-auto items-center justify-between gap-x-2 border-b bg-background px-4 py-3 sm:static sm:border-0 sm:bg-transparent sm:px-6 md:gap-x-4">
+          <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}> 
+            <div className="md:hidden">
+              <SidebarTrigger asChild>
+                <Button size="icon" variant="outline">
+                  <PanelLeft />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
               </SidebarTrigger>
-            )}
+            </div>
           </div>
 
           <div className="flex flex-1 flex-col items-center text-center">
@@ -205,7 +202,7 @@ function PageContent() {
           </div>
 
           <div className="flex-shrink-0" style={{ minWidth: '2.5rem' }}>
-            {/* Placeholder for balance or future buttons, ensures centering of title */}
+            {/* Placeholder for balance, content removed */}
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
@@ -217,22 +214,6 @@ function PageContent() {
             />
         </main>
       </SidebarInset>
-    </>
-  );
-}
-
-export default function HomePage() {
-  const [defaultOpen, setDefaultOpen] = React.useState(true); 
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDefaultOpen(window.innerWidth >= 768); 
-    }
-  }, []);
-
-
-  return (
-    <SidebarProvider defaultOpen={defaultOpen}> 
-      <PageContent />
     </SidebarProvider>
-  )
+  );
 }
